@@ -56,53 +56,53 @@ ELVMTargetLowering::ELVMTargetLowering(const TargetMachine &TM,
     : TargetLowering(TM) {
 
   // Set up the register classes.
-  addRegisterClass(MVT::i64, &ELVM::GPRRegClass);
+  addRegisterClass(MVT::i32, &ELVM::GPRRegClass);
 
   // Compute derived properties from the register classes
   computeRegisterProperties(STI.getRegisterInfo());
 
-  setStackPointerRegisterToSaveRestore(ELVM::R11);
+  setStackPointerRegisterToSaveRestore(ELVM::D);
 
-  setOperationAction(ISD::BR_CC, MVT::i64, Custom);
+  setOperationAction(ISD::BR_CC, MVT::i32, Custom);
   setOperationAction(ISD::BR_JT, MVT::Other, Expand);
   setOperationAction(ISD::BRIND, MVT::Other, Expand);
   setOperationAction(ISD::BRCOND, MVT::Other, Expand);
-  setOperationAction(ISD::SETCC, MVT::i64, Expand);
-  setOperationAction(ISD::SELECT, MVT::i64, Expand);
-  setOperationAction(ISD::SELECT_CC, MVT::i64, Custom);
+  setOperationAction(ISD::SETCC, MVT::i32, Expand);
+  setOperationAction(ISD::SELECT, MVT::i32, Expand);
+  setOperationAction(ISD::SELECT_CC, MVT::i32, Custom);
 
-  setOperationAction(ISD::GlobalAddress, MVT::i64, Custom);
+  setOperationAction(ISD::GlobalAddress, MVT::i32, Custom);
 
-  setOperationAction(ISD::DYNAMIC_STACKALLOC, MVT::i64, Custom);
+  setOperationAction(ISD::DYNAMIC_STACKALLOC, MVT::i32, Custom);
   setOperationAction(ISD::STACKSAVE, MVT::Other, Expand);
   setOperationAction(ISD::STACKRESTORE, MVT::Other, Expand);
 
-  setOperationAction(ISD::SDIVREM, MVT::i64, Expand);
-  setOperationAction(ISD::UDIVREM, MVT::i64, Expand);
-  setOperationAction(ISD::SREM, MVT::i64, Expand);
-  setOperationAction(ISD::UREM, MVT::i64, Expand);
+  setOperationAction(ISD::SDIVREM, MVT::i32, Expand);
+  setOperationAction(ISD::UDIVREM, MVT::i32, Expand);
+  setOperationAction(ISD::SREM, MVT::i32, Expand);
+  setOperationAction(ISD::UREM, MVT::i32, Expand);
 
-  setOperationAction(ISD::MULHU, MVT::i64, Expand);
-  setOperationAction(ISD::MULHS, MVT::i64, Expand);
-  setOperationAction(ISD::UMUL_LOHI, MVT::i64, Expand);
-  setOperationAction(ISD::SMUL_LOHI, MVT::i64, Expand);
+  setOperationAction(ISD::MULHU, MVT::i32, Expand);
+  setOperationAction(ISD::MULHS, MVT::i32, Expand);
+  setOperationAction(ISD::UMUL_LOHI, MVT::i32, Expand);
+  setOperationAction(ISD::SMUL_LOHI, MVT::i32, Expand);
 
-  setOperationAction(ISD::ADDC, MVT::i64, Expand);
-  setOperationAction(ISD::ADDE, MVT::i64, Expand);
-  setOperationAction(ISD::SUBC, MVT::i64, Expand);
-  setOperationAction(ISD::SUBE, MVT::i64, Expand);
+  setOperationAction(ISD::ADDC, MVT::i32, Expand);
+  setOperationAction(ISD::ADDE, MVT::i32, Expand);
+  setOperationAction(ISD::SUBC, MVT::i32, Expand);
+  setOperationAction(ISD::SUBE, MVT::i32, Expand);
 
-  setOperationAction(ISD::ROTR, MVT::i64, Expand);
-  setOperationAction(ISD::ROTL, MVT::i64, Expand);
-  setOperationAction(ISD::SHL_PARTS, MVT::i64, Expand);
-  setOperationAction(ISD::SRL_PARTS, MVT::i64, Expand);
-  setOperationAction(ISD::SRA_PARTS, MVT::i64, Expand);
+  setOperationAction(ISD::ROTR, MVT::i32, Expand);
+  setOperationAction(ISD::ROTL, MVT::i32, Expand);
+  setOperationAction(ISD::SHL_PARTS, MVT::i32, Expand);
+  setOperationAction(ISD::SRL_PARTS, MVT::i32, Expand);
+  setOperationAction(ISD::SRA_PARTS, MVT::i32, Expand);
 
-  setOperationAction(ISD::CTTZ, MVT::i64, Custom);
-  setOperationAction(ISD::CTLZ, MVT::i64, Custom);
-  setOperationAction(ISD::CTTZ_ZERO_UNDEF, MVT::i64, Custom);
-  setOperationAction(ISD::CTLZ_ZERO_UNDEF, MVT::i64, Custom);
-  setOperationAction(ISD::CTPOP, MVT::i64, Expand);
+  setOperationAction(ISD::CTTZ, MVT::i32, Custom);
+  setOperationAction(ISD::CTLZ, MVT::i32, Custom);
+  setOperationAction(ISD::CTTZ_ZERO_UNDEF, MVT::i32, Custom);
+  setOperationAction(ISD::CTLZ_ZERO_UNDEF, MVT::i32, Custom);
+  setOperationAction(ISD::CTPOP, MVT::i32, Expand);
 
   setOperationAction(ISD::SIGN_EXTEND_INREG, MVT::i1, Expand);
   setOperationAction(ISD::SIGN_EXTEND_INREG, MVT::i8, Expand);
@@ -166,7 +166,7 @@ SDValue ELVMTargetLowering::LowerFormalArguments(
   // Assign locations to all of the incoming arguments.
   SmallVector<CCValAssign, 16> ArgLocs;
   CCState CCInfo(CallConv, IsVarArg, MF, ArgLocs, *DAG.getContext());
-  CCInfo.AnalyzeFormalArguments(Ins, CC_ELVM64);
+  CCInfo.AnalyzeFormalArguments(Ins, CC_ELVM);
 
   for (auto &VA : ArgLocs) {
     if (VA.isRegLoc()) {
@@ -178,7 +178,7 @@ SDValue ELVMTargetLowering::LowerFormalArguments(
                << RegVT.getEVTString() << '\n';
         llvm_unreachable(0);
       }
-      case MVT::i64:
+      case MVT::i32:
         unsigned VReg = RegInfo.createVirtualRegister(&ELVM::GPRRegClass);
         RegInfo.addLiveIn(VA.getLocReg(), VReg);
         SDValue ArgValue = DAG.getCopyFromReg(Chain, DL, VReg, RegVT);
@@ -241,7 +241,7 @@ SDValue ELVMTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
   SmallVector<CCValAssign, 16> ArgLocs;
   CCState CCInfo(CallConv, IsVarArg, MF, ArgLocs, *DAG.getContext());
 
-  CCInfo.AnalyzeCallOperands(Outs, CC_ELVM64);
+  CCInfo.AnalyzeCallOperands(Outs, CC_ELVM);
 
   unsigned NumBytes = CCInfo.getNextStackOffset();
 
@@ -362,7 +362,7 @@ ELVMTargetLowering::LowerReturn(SDValue Chain, CallingConv::ID CallConv,
   }
 
   // Analize return values.
-  CCInfo.AnalyzeReturn(Outs, RetCC_ELVM64);
+  CCInfo.AnalyzeReturn(Outs, RetCC_ELVM);
 
   SDValue Flag;
   SmallVector<SDValue, 4> RetOps(1, Chain);
@@ -406,7 +406,7 @@ SDValue ELVMTargetLowering::LowerCallResult(
     return DAG.getCopyFromReg(Chain, DL, 1, Ins[0].VT, InFlag).getValue(1);
   }
 
-  CCInfo.AnalyzeCallResult(Ins, RetCC_ELVM64);
+  CCInfo.AnalyzeCallResult(Ins, RetCC_ELVM);
 
   // Copy all of the result registers out of their specified physreg.
   for (auto &Val : RVLocs) {
@@ -444,7 +444,7 @@ SDValue ELVMTargetLowering::LowerBR_CC(SDValue Op, SelectionDAG &DAG) const {
   NegateCC(LHS, RHS, CC);
 
   return DAG.getNode(ELVMISD::BR_CC, DL, Op.getValueType(), Chain, LHS, RHS,
-                     DAG.getConstant(CC, DL, MVT::i64), Dest);
+                     DAG.getConstant(CC, DL, MVT::i32), Dest);
 }
 
 SDValue ELVMTargetLowering::LowerSELECT_CC(SDValue Op, SelectionDAG &DAG) const {
@@ -457,7 +457,7 @@ SDValue ELVMTargetLowering::LowerSELECT_CC(SDValue Op, SelectionDAG &DAG) const 
 
   NegateCC(LHS, RHS, CC);
 
-  SDValue TargetCC = DAG.getConstant(CC, DL, MVT::i64);
+  SDValue TargetCC = DAG.getConstant(CC, DL, MVT::i32);
 
   SDVTList VTs = DAG.getVTList(Op.getValueType(), MVT::Glue);
   SDValue Ops[] = {LHS, RHS, TargetCC, TrueV, FalseV};
@@ -487,9 +487,9 @@ SDValue ELVMTargetLowering::LowerGlobalAddress(SDValue Op,
                                               SelectionDAG &DAG) const {
   SDLoc DL(Op);
   const GlobalValue *GV = cast<GlobalAddressSDNode>(Op)->getGlobal();
-  SDValue GA = DAG.getTargetGlobalAddress(GV, DL, MVT::i64);
+  SDValue GA = DAG.getTargetGlobalAddress(GV, DL, MVT::i32);
 
-  return DAG.getNode(ELVMISD::Wrapper, DL, MVT::i64, GA);
+  return DAG.getNode(ELVMISD::Wrapper, DL, MVT::i32, GA);
 }
 
 MachineBasicBlock *

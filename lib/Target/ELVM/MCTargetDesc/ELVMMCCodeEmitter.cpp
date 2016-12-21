@@ -98,7 +98,7 @@ unsigned ELVMMCCodeEmitter::getMachineOpValue(const MCInst &MI,
   if (MI.getOpcode() == ELVM::JAL)
     // func call name
     Fixups.push_back(MCFixup::create(0, Expr, FK_SecRel_4));
-  else if (MI.getOpcode() == ELVM::LD_imm64)
+  else if (MI.getOpcode() == ELVM::LD_imm32)
     Fixups.push_back(MCFixup::create(0, Expr, FK_SecRel_8));
   else
     // bb label
@@ -122,7 +122,8 @@ void ELVMMCCodeEmitter::encodeInstruction(const MCInst &MI, raw_ostream &OS,
   support::endian::Writer<support::little> LE(OS);
   support::endian::Writer<support::big> BE(OS);
 
-  if (Opcode == ELVM::LD_imm64 || Opcode == ELVM::LD_pseudo) {
+  // TODO
+  if (Opcode == ELVM::LD_imm32 /*|| Opcode == ELVM::LD_pseudo*/) {
     uint64_t Value = getBinaryCodeForInstr(MI, Fixups, STI);
     LE.write<uint8_t>(Value >> 56);
     if (IsLittleEndian)

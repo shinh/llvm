@@ -33,8 +33,10 @@ void ELVMFrameLowering::determineCalleeSaves(MachineFunction &MF,
                                             BitVector &SavedRegs,
                                             RegScavenger *RS) const {
   TargetFrameLowering::determineCalleeSaves(MF, SavedRegs, RS);
+#if 0
   SavedRegs.reset(ELVM::R6);
   SavedRegs.reset(ELVM::R7);
   SavedRegs.reset(ELVM::R8);
   SavedRegs.reset(ELVM::R9);
+#endif
 }

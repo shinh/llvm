@@ -62,9 +62,14 @@ extern "C" void LLVMInitializeELVMDisassembler() {
                                          createELVMDisassembler);
 }
 
+#if 0
 static const unsigned GPRDecoderTable[] = {
     ELVM::R0,  ELVM::R1,  ELVM::R2,  ELVM::R3,  ELVM::R4,  ELVM::R5,
     ELVM::R6,  ELVM::R7,  ELVM::R8,  ELVM::R9,  ELVM::R10, ELVM::R11};
+#endif
+static const unsigned GPRDecoderTable[] = {
+    ELVM::A,  ELVM::B,  ELVM::C,  ELVM::D,  ELVM::BP,  ELVM::SP
+};
 
 static DecodeStatus DecodeGPRRegisterClass(MCInst &Inst, unsigned RegNo,
                                            uint64_t /*Address*/,
@@ -122,7 +127,7 @@ DecodeStatus ELVMDisassembler::getInstruction(MCInst &Instr, uint64_t &Size,
   if (Result == MCDisassembler::Fail) return MCDisassembler::Fail;
 
   switch (Instr.getOpcode()) {
-  case ELVM::LD_imm64: {
+  case ELVM::LD_imm32: {
     if (Bytes.size() < 16) {
       Size = 0;
       return MCDisassembler::Fail;
@@ -133,6 +138,7 @@ DecodeStatus ELVMDisassembler::getInstruction(MCInst &Instr, uint64_t &Size,
     Op.setImm(Make_64(Hi, Op.getImm()));
     break;
   }
+#if 0
   case ELVM::LD_ABS_B:
   case ELVM::LD_ABS_H:
   case ELVM::LD_ABS_W:
@@ -145,6 +151,7 @@ DecodeStatus ELVMDisassembler::getInstruction(MCInst &Instr, uint64_t &Size,
     Instr.addOperand(Op);
     break;
   }
+#endif
   }
 
   return Result;

@@ -59,8 +59,8 @@ bool ELVMDAGToDAGISel::SelectAddr(SDValue Addr, SDValue &Base, SDValue &Offset) 
   // if Address is FI, get the TargetFrameIndex.
   SDLoc DL(Addr);
   if (FrameIndexSDNode *FIN = dyn_cast<FrameIndexSDNode>(Addr)) {
-    Base   = CurDAG->getTargetFrameIndex(FIN->getIndex(), MVT::i64);
-    Offset = CurDAG->getTargetConstant(0, DL, MVT::i64);
+    Base   = CurDAG->getTargetFrameIndex(FIN->getIndex(), MVT::i32);
+    Offset = CurDAG->getTargetConstant(0, DL, MVT::i32);
     return true;
   }
 
@@ -76,17 +76,17 @@ bool ELVMDAGToDAGISel::SelectAddr(SDValue Addr, SDValue &Base, SDValue &Offset) 
       // If the first operand is a FI, get the TargetFI Node
       if (FrameIndexSDNode *FIN =
               dyn_cast<FrameIndexSDNode>(Addr.getOperand(0)))
-        Base = CurDAG->getTargetFrameIndex(FIN->getIndex(), MVT::i64);
+        Base = CurDAG->getTargetFrameIndex(FIN->getIndex(), MVT::i32);
       else
         Base = Addr.getOperand(0);
 
-      Offset = CurDAG->getTargetConstant(CN->getSExtValue(), DL, MVT::i64);
+      Offset = CurDAG->getTargetConstant(CN->getSExtValue(), DL, MVT::i32);
       return true;
     }
   }
 
   Base   = Addr;
-  Offset = CurDAG->getTargetConstant(0, DL, MVT::i64);
+  Offset = CurDAG->getTargetConstant(0, DL, MVT::i32);
   return true;
 }
 
@@ -104,11 +104,11 @@ bool ELVMDAGToDAGISel::SelectFIAddr(SDValue Addr, SDValue &Base, SDValue &Offset
     // If the first operand is a FI, get the TargetFI Node
     if (FrameIndexSDNode *FIN =
             dyn_cast<FrameIndexSDNode>(Addr.getOperand(0)))
-      Base = CurDAG->getTargetFrameIndex(FIN->getIndex(), MVT::i64);
+      Base = CurDAG->getTargetFrameIndex(FIN->getIndex(), MVT::i32);
     else
       return false;
 
-    Offset = CurDAG->getTargetConstant(CN->getSExtValue(), DL, MVT::i64);
+    Offset = CurDAG->getTargetConstant(CN->getSExtValue(), DL, MVT::i32);
     return true;
   }
 
@@ -155,7 +155,8 @@ void ELVMDAGToDAGISel::Select(SDNode *Node) {
       SDValue Skb = Node->getOperand(2);
       SDValue N3 = Node->getOperand(3);
 
-      SDValue R6Reg = CurDAG->getRegister(ELVM::R6, MVT::i64);
+      // TODO: s/R6/C/
+      SDValue R6Reg = CurDAG->getRegister(ELVM::C, MVT::i32);
       Chain = CurDAG->getCopyToReg(Chain, DL, R6Reg, Skb, SDValue());
       Node = CurDAG->UpdateNodeOperands(Node, Chain, N1, R6Reg, N3);
       break;

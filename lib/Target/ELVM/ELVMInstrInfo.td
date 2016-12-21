@@ -44,21 +44,21 @@ def ELVMselectcc     : SDNode<"ELVMISD::SELECT_CC", SDT_ELVMSelectCC, [SDNPInGlu
 def ELVMWrapper      : SDNode<"ELVMISD::Wrapper", SDT_ELVMWrapper>;
 
 def brtarget : Operand<OtherVT>;
-def calltarget : Operand<i64>;
+def calltarget : Operand<i32>;
 
-def u64imm   : Operand<i64> {
-  let PrintMethod = "printImm64Operand";
+def u32imm   : Operand<i32> {
+  let PrintMethod = "printImm32Operand";
 }
 
-def i64immSExt32 : PatLeaf<(imm),
+def i32immSExt32 : PatLeaf<(imm),
                 [{return isInt<32>(N->getSExtValue()); }]>;
 
 // Addressing modes.
-def ADDRri : ComplexPattern<i64, 2, "SelectAddr", [], []>;
-def FIri : ComplexPattern<i64, 2, "SelectFIAddr", [add, or], []>;
+def ADDRri : ComplexPattern<i32, 2, "SelectAddr", [], []>;
+def FIri : ComplexPattern<i32, 2, "SelectFIAddr", [add, or], []>;
 
 // Address operands
-def MEMri : Operand<i64> {
+def MEMri : Operand<i32> {
   let PrintMethod = "printMemOperand";
   let EncoderMethod = "getMemoryOpValue";
   let DecoderMethod = "decodeMemoryOpValue";
@@ -83,7 +83,7 @@ def ELVM_CC_GEU : PatLeaf<(imm),
 class JMP_RR<bits<4> Opc, string OpcodeStr, PatLeaf Cond>
     : InstELVM<(outs), (ins GPR:$dst, GPR:$src, brtarget:$BrDst),
               "if $dst "#OpcodeStr#" $src goto $BrDst",
-              [(ELVMbrcc i64:$dst, i64:$src, Cond, bb:$BrDst)]> {
+              [(ELVMbrcc i32:$dst, i32:$src, Cond, bb:$BrDst)]> {
   bits<4> op;
   bits<1> ELVMSrc;
   bits<4> dst;
@@ -102,9 +102,9 @@ class JMP_RR<bits<4> Opc, string OpcodeStr, PatLeaf Cond>
 }
 
 class JMP_RI<bits<4> Opc, string OpcodeStr, PatLeaf Cond>
-    : InstELVM<(outs), (ins GPR:$dst, i64imm:$imm, brtarget:$BrDst),
+    : InstELVM<(outs), (ins GPR:$dst, i32imm:$imm, brtarget:$BrDst),
               "if $dst "#OpcodeStr#" $imm goto $BrDst",
-              [(ELVMbrcc i64:$dst, i64immSExt32:$imm, Cond, bb:$BrDst)]> {
+              [(ELVMbrcc i32:$dst, i32immSExt32:$imm, Cond, bb:$BrDst)]> {
   bits<4> op;
   bits<1> ELVMSrc;
   bits<4> dst;
@@ -139,9 +139,9 @@ defm JSGE : J<0x7, "s>=", ELVM_CC_GE>;
 
 // ALU instructions
 class ALU_RI<bits<4> Opc, string OpcodeStr, SDNode OpNode>
-    : InstELVM<(outs GPR:$dst), (ins GPR:$src2, i64imm:$imm),
+    : InstELVM<(outs GPR:$dst), (ins GPR:$src2, i32imm:$imm),
               "$dst "#OpcodeStr#" $imm",
-              [(set GPR:$dst, (OpNode GPR:$src2, i64immSExt32:$imm))]> {
+              [(set GPR:$dst, (OpNode GPR:$src2, i32immSExt32:$imm))]> {
   bits<4> op;
   bits<1> ELVMSrc;
   bits<4> dst;
@@ -154,13 +154,13 @@ class ALU_RI<bits<4> Opc, string OpcodeStr, SDNode OpNode>
 
   let op = Opc;
   let ELVMSrc = 0;
-  let ELVMClass = 7; // ELVM_ALU64
+  let ELVMClass = 7; // ELVM_ALU32
 }
 
 class ALU_RR<bits<4> Opc, string OpcodeStr, SDNode OpNode>
     : InstELVM<(outs GPR:$dst), (ins GPR:$src2, GPR:$src),
               "$dst "#OpcodeStr#" $src",
-              [(set GPR:$dst, (OpNode i64:$src2, i64:$src))]> {
+              [(set GPR:$dst, (OpNode i32:$src2, i32:$src))]> {
   bits<4> op;
   bits<1> ELVMSrc;
   bits<4> dst;
@@ -173,7 +173,7 @@ class ALU_RR<bits<4> Opc, string OpcodeStr, SDNode OpNode>
 
   let op = Opc;
   let ELVMSrc = 1;
-  let ELVMClass = 7; // ELVM_ALU64
+  let ELVMClass = 7; // ELVM_ALU32
 }
 
 multiclass ALU<bits<4> Opc, string OpcodeStr, SDNode OpNode> {
@@ -212,13 +212,13 @@ class MOV_RR<string OpcodeStr>
 
   let op = 0xb;     // ELVM_MOV
   let ELVMSrc = 1;   // ELVM_X
-  let ELVMClass = 7; // ELVM_ALU64
+  let ELVMClass = 7; // ELVM_ALU32
 }
 
 class MOV_RI<string OpcodeStr>
-    : InstELVM<(outs GPR:$dst), (ins i64imm:$imm),
+    : InstELVM<(outs GPR:$dst), (ins i32imm:$imm),
               "$dst "#OpcodeStr#" $imm",
-              [(set GPR:$dst, (i64 i64immSExt32:$imm))]> {
+              [(set GPR:$dst, (i32 i32immSExt32:$imm))]> {
   bits<4> op;
   bits<1> ELVMSrc;
   bits<4> dst;
@@ -231,18 +231,18 @@ class MOV_RI<string OpcodeStr>
 
   let op = 0xb;     // ELVM_MOV
   let ELVMSrc = 0;   // ELVM_K
-  let ELVMClass = 7; // ELVM_ALU64
+  let ELVMClass = 7; // ELVM_ALU32
 }
 
-class LD_IMM64<bits<4> Pseudo, string OpcodeStr>
-    : InstELVM<(outs GPR:$dst), (ins u64imm:$imm),
+class LD_IMM32<bits<4> Pseudo, string OpcodeStr>
+    : InstELVM<(outs GPR:$dst), (ins u32imm:$imm),
               "$dst "#OpcodeStr#" ${imm}ll",
-              [(set GPR:$dst, (i64 imm:$imm))]> {
+              [(set GPR:$dst, (i32 imm:$imm))]> {
 
   bits<3> mode;
   bits<2> size;
   bits<4> dst;
-  bits<64> imm;
+  bits<32> imm;
 
   let Inst{63-61} = mode;
   let Inst{60-59} = size;
@@ -257,7 +257,7 @@ class LD_IMM64<bits<4> Pseudo, string OpcodeStr>
 }
 
 let isReMaterializable = 1, isAsCheapAsAMove = 1 in {
-def LD_imm64 : LD_IMM64<0, "=">;
+def LD_imm32 : LD_IMM32<0, "=">;
 def MOV_rr : MOV_RR<"=">;
 def MOV_ri : MOV_RI<"=">;
 }
@@ -265,7 +265,7 @@ def MOV_ri : MOV_RI<"=">;
 def FI_ri
     : InstELVM<(outs GPR:$dst), (ins MEMri:$addr),
                "lea\t$dst, $addr",
-               [(set i64:$dst, FIri:$addr)]> {
+               [(set i32:$dst, FIri:$addr)]> {
   // This is a tentative instruction, and will be replaced
   // with MOV_rr and ADD_ri in PEI phase
   let Inst{63-61} = 0;
@@ -277,15 +277,16 @@ def FI_ri
   let ELVMClass = 0;
 }
 
+/*
 def LD_pseudo
-    : InstELVM<(outs GPR:$dst), (ins i64imm:$pseudo, u64imm:$imm),
+    : InstELVM<(outs GPR:$dst), (ins i32imm:$pseudo, u32imm:$imm),
               "ld_pseudo\t$dst, $pseudo, $imm",
               [(set GPR:$dst, (int_bpf_pseudo imm:$pseudo, imm:$imm))]> {
 
   bits<3> mode;
   bits<2> size;
   bits<4> dst;
-  bits<64> imm;
+  bits<32> imm;
   bits<4> pseudo;
 
   let Inst{63-61} = mode;
@@ -299,6 +300,7 @@ def LD_pseudo
   let size = 3;     // ELVM_DW
   let ELVMClass = 0; // ELVM_LD
 }
+*/
 
 // STORE instructions
 class STORE<bits<2> SizeOp, string OpcodeStr, list<dag> Pattern>
@@ -320,13 +322,13 @@ class STORE<bits<2> SizeOp, string OpcodeStr, list<dag> Pattern>
   let ELVMClass = 3; // ELVM_STX
 }
 
-class STOREi64<bits<2> Opc, string OpcodeStr, PatFrag OpNode>
-    : STORE<Opc, OpcodeStr, [(OpNode i64:$src, ADDRri:$addr)]>;
+class STOREi32<bits<2> Opc, string OpcodeStr, PatFrag OpNode>
+    : STORE<Opc, OpcodeStr, [(OpNode i32:$src, ADDRri:$addr)]>;
 
-def STW : STOREi64<0x0, "u32", truncstorei32>;
-def STH : STOREi64<0x1, "u16", truncstorei16>;
-def STB : STOREi64<0x2, "u8", truncstorei8>;
-def STD : STOREi64<0x3, "u64", store>;
+def STW : STOREi32<0x0, "u32", truncstorei32>;
+def STH : STOREi32<0x1, "u16", truncstorei16>;
+def STB : STOREi32<0x2, "u8", truncstorei8>;
+def STD : STOREi32<0x3, "u32", store>;
 
 // LOAD instructions
 class LOAD<bits<2> SizeOp, string OpcodeStr, list<dag> Pattern>
@@ -348,13 +350,13 @@ class LOAD<bits<2> SizeOp, string OpcodeStr, list<dag> Pattern>
   let ELVMClass = 1; // ELVM_LDX
 }
 
-class LOADi64<bits<2> SizeOp, string OpcodeStr, PatFrag OpNode>
-    : LOAD<SizeOp, OpcodeStr, [(set i64:$dst, (OpNode ADDRri:$addr))]>;
+class LOADi32<bits<2> SizeOp, string OpcodeStr, PatFrag OpNode>
+    : LOAD<SizeOp, OpcodeStr, [(set i32:$dst, (OpNode ADDRri:$addr))]>;
 
-def LDW : LOADi64<0x0, "u32", zextloadi32>;
-def LDH : LOADi64<0x1, "u16", zextloadi16>;
-def LDB : LOADi64<0x2, "u8", zextloadi8>;
-def LDD : LOADi64<0x3, "u64", load>;
+def LDW : LOADi32<0x0, "u32", zextloadi32>;
+def LDH : LOADi32<0x1, "u16", zextloadi16>;
+def LDB : LOADi32<0x2, "u8", zextloadi8>;
+def LDD : LOADi32<0x3, "u32", load>;
 
 class BRANCH<bits<4> Opc, string OpcodeStr, list<dag> Pattern>
     : InstELVM<(outs), (ins brtarget:$BrDst),
@@ -394,9 +396,9 @@ let isBranch = 1, isTerminator = 1, hasDelaySlot=0, isBarrier = 1 in {
 }
 
 // Jump and link
-let isCall=1, hasDelaySlot=0, Uses = [R11],
+let isCall=1, hasDelaySlot=0, Uses = [D],
     // Potentially clobbered registers
-    Defs = [R0, R1, R2, R3, R4, R5] in {
+    Defs = [A, B, C, D] in {
   def JAL  : CALL<"call">;
 }
 
@@ -416,7 +418,7 @@ class NOP_I<string OpcodeStr>
 
   let op = 0xb;     // ELVM_MOV
   let ELVMSrc = 1;   // ELVM_X
-  let ELVMClass = 7; // ELVM_ALU64
+  let ELVMClass = 7; // ELVM_ALU32
   let src = 0;      // R0
   let dst = 0;      // R0
 }
@@ -443,38 +445,38 @@ let isReturn = 1, isTerminator = 1, hasDelaySlot=0, isBarrier = 1,
 }
 
 // ADJCALLSTACKDOWN/UP pseudo insns
-let Defs = [R11], Uses = [R11] in {
-def ADJCALLSTACKDOWN : Pseudo<(outs), (ins i64imm:$amt),
+let Defs = [D], Uses = [D] in {
+def ADJCALLSTACKDOWN : Pseudo<(outs), (ins i32imm:$amt),
                               "#ADJCALLSTACKDOWN $amt",
                               [(ELVMcallseq_start timm:$amt)]>;
-def ADJCALLSTACKUP   : Pseudo<(outs), (ins i64imm:$amt1, i64imm:$amt2),
+def ADJCALLSTACKUP   : Pseudo<(outs), (ins i32imm:$amt1, i32imm:$amt2),
                               "#ADJCALLSTACKUP $amt1 $amt2",
                               [(ELVMcallseq_end timm:$amt1, timm:$amt2)]>;
 }
 
 let usesCustomInserter = 1 in {
   def Select : Pseudo<(outs GPR:$dst),
-                      (ins GPR:$lhs, GPR:$rhs, i64imm:$imm, GPR:$src, GPR:$src2),
+                      (ins GPR:$lhs, GPR:$rhs, i32imm:$imm, GPR:$src, GPR:$src2),
                       "# Select PSEUDO $dst = $lhs $imm $rhs ? $src : $src2",
-                      [(set i64:$dst,
-                       (ELVMselectcc i64:$lhs, i64:$rhs, (i64 imm:$imm), i64:$src, i64:$src2))]>;
+                      [(set i32:$dst,
+                       (ELVMselectcc i32:$lhs, i32:$rhs, (i32 imm:$imm), i32:$src, i32:$src2))]>;
 }
 
-// load 64-bit global addr into register
-def : Pat<(ELVMWrapper tglobaladdr:$in), (LD_imm64 tglobaladdr:$in)>;
+// load 32-bit global addr into register
+def : Pat<(ELVMWrapper tglobaladdr:$in), (LD_imm32 tglobaladdr:$in)>;
 
 // 0xffffFFFF doesn't fit into simm32, optimize common case
-def : Pat<(i64 (and (i64 GPR:$src), 0xffffFFFF)),
-          (SRL_ri (SLL_ri (i64 GPR:$src), 32), 32)>;
+def : Pat<(i32 (and (i32 GPR:$src), 0xffffFFFF)),
+          (SRL_ri (SLL_ri (i32 GPR:$src), 32), 32)>;
 
 // Calls
 def : Pat<(ELVMcall tglobaladdr:$dst), (JAL tglobaladdr:$dst)>;
 def : Pat<(ELVMcall imm:$dst), (JAL imm:$dst)>;
 
 // Loads
-def : Pat<(extloadi8  ADDRri:$src), (i64 (LDB ADDRri:$src))>;
-def : Pat<(extloadi16 ADDRri:$src), (i64 (LDH ADDRri:$src))>;
-def : Pat<(extloadi32 ADDRri:$src), (i64 (LDW ADDRri:$src))>;
+def : Pat<(extloadi8  ADDRri:$src), (i32 (LDB ADDRri:$src))>;
+def : Pat<(extloadi16 ADDRri:$src), (i32 (LDH ADDRri:$src))>;
+def : Pat<(extloadi32 ADDRri:$src), (i32 (LDW ADDRri:$src))>;
 
 // Atomics
 class XADD<bits<2> SizeOp, string OpcodeStr, PatFrag OpNode>
@@ -499,12 +501,9 @@ class XADD<bits<2> SizeOp, string OpcodeStr, PatFrag OpNode>
 
 let Constraints = "$dst = $val" in {
 def XADD32 : XADD<0, "u32", atomic_load_add_32>;
-def XADD64 : XADD<3, "u64", atomic_load_add_64>;
-// undefined def XADD16 : XADD<1, "xadd16", atomic_load_add_16>;
-// undefined def XADD8  : XADD<2, "xadd8", atomic_load_add_8>;
 }
 
-// bswap16, bswap32, bswap64
+// bswap16, bswap32, bswap32
 class BSWAP<bits<32> SizeOp, string OpcodeStr, list<dag> Pattern>
     : InstELVM<(outs GPR:$dst), (ins GPR:$src),
               !strconcat(OpcodeStr, "\t$dst"),
@@ -526,17 +525,16 @@ class BSWAP<bits<32> SizeOp, string OpcodeStr, list<dag> Pattern>
 }
 
 let Constraints = "$dst = $src" in {
-def BSWAP16 : BSWAP<16, "bswap16", [(set GPR:$dst, (srl (bswap GPR:$src), (i64 48)))]>;
-def BSWAP32 : BSWAP<32, "bswap32", [(set GPR:$dst, (srl (bswap GPR:$src), (i64 32)))]>;
-def BSWAP64 : BSWAP<64, "bswap64", [(set GPR:$dst, (bswap GPR:$src))]>;
+def BSWAP16 : BSWAP<16, "bswap16", [(set GPR:$dst, (srl (bswap GPR:$src), (i32 48)))]>;
+def BSWAP32 : BSWAP<32, "bswap32", [(set GPR:$dst, (bswap GPR:$src))]>;
 }
 
-let Defs = [R0, R1, R2, R3, R4, R5], Uses = [R6], hasSideEffects = 1,
+let Defs = [A, B, D], Uses = [C], hasSideEffects = 1,
     hasExtraDefRegAllocReq = 1, hasExtraSrcRegAllocReq = 1, mayLoad = 1 in {
 class LOAD_ABS<bits<2> SizeOp, string OpcodeStr, Intrinsic OpNode>
-    : InstELVM<(outs), (ins GPR:$skb, i64imm:$imm),
+    : InstELVM<(outs), (ins GPR:$skb, i32imm:$imm),
               "r0 = *("#OpcodeStr#" *)skb[$imm]",
-              [(set R0, (OpNode GPR:$skb, i64immSExt32:$imm))]> {
+              [(set A, (OpNode GPR:$skb, i32immSExt32:$imm))]> {
   bits<3> mode;
   bits<2> size;
   bits<32> imm;
@@ -553,7 +551,7 @@ class LOAD_ABS<bits<2> SizeOp, string OpcodeStr, Intrinsic OpNode>
 class LOAD_IND<bits<2> SizeOp, string OpcodeStr, Intrinsic OpNode>
     : InstELVM<(outs), (ins GPR:$skb, GPR:$val),
               "r0 = *("#OpcodeStr#" *)skb[$val]",
-              [(set R0, (OpNode GPR:$skb, GPR:$val))]> {
+              [(set A, (OpNode GPR:$skb, GPR:$val))]> {
   bits<3> mode;
   bits<2> size;
   bits<4> val;
@@ -568,6 +566,7 @@ class LOAD_IND<bits<2> SizeOp, string OpcodeStr, Intrinsic OpNode>
 }
 }
 
+/*
 def LD_ABS_B : LOAD_ABS<2, "u8", int_bpf_load_byte>;
 def LD_ABS_H : LOAD_ABS<1, "u16", int_bpf_load_half>;
 def LD_ABS_W : LOAD_ABS<0, "u32", int_bpf_load_word>;
@@ -575,3 +574,4 @@ def LD_ABS_W : LOAD_ABS<0, "u32", int_bpf_load_word>;
 def LD_IND_B : LOAD_IND<2, "u8", int_bpf_load_byte>;
 def LD_IND_H : LOAD_IND<1, "u16", int_bpf_load_half>;
 def LD_IND_W : LOAD_IND<0, "u32", int_bpf_load_word>;
+*/

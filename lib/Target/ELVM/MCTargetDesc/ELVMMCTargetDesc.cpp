@@ -41,7 +41,7 @@ static MCInstrInfo *createELVMMCInstrInfo() {
 
 static MCRegisterInfo *createELVMMCRegisterInfo(const Triple &TT) {
   MCRegisterInfo *X = new MCRegisterInfo();
-  InitELVMMCRegisterInfo(X, ELVM::R11 /* RAReg doesn't exist */);
+  InitELVMMCRegisterInfo(X, ELVM::D /* RAReg doesn't exist */);
   return X;
 }
 

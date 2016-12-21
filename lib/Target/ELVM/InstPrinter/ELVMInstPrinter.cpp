@@ -84,11 +84,11 @@ void ELVMInstPrinter::printMemOperand(const MCInst *MI, int OpNo, raw_ostream &O
   }
 }
 
-void ELVMInstPrinter::printImm64Operand(const MCInst *MI, unsigned OpNo,
+void ELVMInstPrinter::printImm32Operand(const MCInst *MI, unsigned OpNo,
                                        raw_ostream &O) {
   const MCOperand &Op = MI->getOperand(OpNo);
   if (Op.isImm())
-    O << (uint64_t)Op.getImm();
+    O << (uint32_t)Op.getImm();
   else
     O << Op;
 }
