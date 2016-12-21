@@ -62,11 +62,6 @@ extern "C" void LLVMInitializeELVMDisassembler() {
                                          createELVMDisassembler);
 }
 
-#if 0
-static const unsigned GPRDecoderTable[] = {
-    ELVM::R0,  ELVM::R1,  ELVM::R2,  ELVM::R3,  ELVM::R4,  ELVM::R5,
-    ELVM::R6,  ELVM::R7,  ELVM::R8,  ELVM::R9,  ELVM::R10, ELVM::R11};
-#endif
 static const unsigned GPRDecoderTable[] = {
     ELVM::A,  ELVM::B,  ELVM::C,  ELVM::D,  ELVM::BP,  ELVM::SP
 };

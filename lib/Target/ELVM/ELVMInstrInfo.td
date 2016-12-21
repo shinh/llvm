@@ -198,7 +198,7 @@ let isAsCheapAsAMove = 1 in {
 
 class MOV_RR<string OpcodeStr>
     : InstELVM<(outs GPR:$dst), (ins GPR:$src),
-              "$dst "#OpcodeStr#" $src",
+              "mov $dst $src",
               []> {
   bits<4> op;
   bits<1> ELVMSrc;
@@ -217,7 +217,7 @@ class MOV_RR<string OpcodeStr>
 
 class MOV_RI<string OpcodeStr>
     : InstELVM<(outs GPR:$dst), (ins i32imm:$imm),
-              "$dst "#OpcodeStr#" $imm",
+              "mov $dst $imm",
               [(set GPR:$dst, (i32 i32immSExt32:$imm))]> {
   bits<4> op;
   bits<1> ELVMSrc;
@@ -234,9 +234,9 @@ class MOV_RI<string OpcodeStr>
   let ELVMClass = 7; // ELVM_ALU32
 }
 
-class LD_IMM32<bits<4> Pseudo, string OpcodeStr>
+class LD_IMM32<bits<4> Pseudo>
     : InstELVM<(outs GPR:$dst), (ins u32imm:$imm),
-              "$dst "#OpcodeStr#" ${imm}ll",
+              "mov $dst ${imm}ll",
               [(set GPR:$dst, (i32 imm:$imm))]> {
 
   bits<3> mode;
@@ -257,7 +257,7 @@ class LD_IMM32<bits<4> Pseudo, string OpcodeStr>
 }
 
 let isReMaterializable = 1, isAsCheapAsAMove = 1 in {
-def LD_imm32 : LD_IMM32<0, "=">;
+def LD_imm32 : LD_IMM32<0>;
 def MOV_rr : MOV_RR<"=">;
 def MOV_ri : MOV_RI<"=">;
 }
