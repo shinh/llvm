@@ -140,7 +140,7 @@ defm JSGE : J<0x7, "s>=", ELVM_CC_GE>;
 // ALU instructions
 class ALU_RI<bits<4> Opc, string OpcodeStr, SDNode OpNode>
     : InstELVM<(outs GPR:$dst), (ins GPR:$src2, i32imm:$imm),
-              "$dst "#OpcodeStr#" $imm",
+              OpcodeStr#" $dst, $imm",
               [(set GPR:$dst, (OpNode GPR:$src2, i32immSExt32:$imm))]> {
   bits<4> op;
   bits<1> ELVMSrc;
@@ -159,7 +159,7 @@ class ALU_RI<bits<4> Opc, string OpcodeStr, SDNode OpNode>
 
 class ALU_RR<bits<4> Opc, string OpcodeStr, SDNode OpNode>
     : InstELVM<(outs GPR:$dst), (ins GPR:$src2, GPR:$src),
-              "$dst "#OpcodeStr#" $src",
+              OpcodeStr#" $dst, $src",
               [(set GPR:$dst, (OpNode i32:$src2, i32:$src))]> {
   bits<4> op;
   bits<1> ELVMSrc;
@@ -183,17 +183,17 @@ multiclass ALU<bits<4> Opc, string OpcodeStr, SDNode OpNode> {
 
 let Constraints = "$dst = $src2" in {
 let isAsCheapAsAMove = 1 in {
-  defm ADD : ALU<0x0, "+=", add>;
-  defm SUB : ALU<0x1, "-=", sub>;
-  defm OR  : ALU<0x4, "|=", or>;
-  defm AND : ALU<0x5, "&=", and>;
-  defm SLL : ALU<0x6, "<<=", shl>;
-  defm SRL : ALU<0x7, ">>=", srl>;
-  defm XOR : ALU<0xa, "^=", xor>;
-  defm SRA : ALU<0xc, "s>>=", sra>;
+  defm ADD : ALU<0x0, "add", add>;
+  defm SUB : ALU<0x1, "sub", sub>;
 }
-  defm MUL : ALU<0x2, "*=", mul>;
-  defm DIV : ALU<0x3, "/=", udiv>;
+  defm OR  : ALU<0x4, "or", or>;
+  defm AND : ALU<0x5, "and", and>;
+  defm SLL : ALU<0x6, "sll", shl>;
+  defm SRL : ALU<0x7, "srl", srl>;
+  defm XOR : ALU<0xa, "xor", xor>;
+  defm SRA : ALU<0xc, "sra", sra>;
+  defm MUL : ALU<0x2, "mul", mul>;
+  defm DIV : ALU<0x3, "div", udiv>;
 }
 
 class MOV_RR<string OpcodeStr>
@@ -217,7 +217,7 @@ class MOV_RR<string OpcodeStr>
 
 class MOV_RI<string OpcodeStr>
     : InstELVM<(outs GPR:$dst), (ins i32imm:$imm),
-              "mov $dst $imm",
+              "mov $dst, $imm",
               [(set GPR:$dst, (i32 i32immSExt32:$imm))]> {
   bits<4> op;
   bits<1> ELVMSrc;
@@ -236,7 +236,7 @@ class MOV_RI<string OpcodeStr>
 
 class LD_IMM32<bits<4> Pseudo>
     : InstELVM<(outs GPR:$dst), (ins u32imm:$imm),
-              "mov $dst ${imm}ll",
+              "mov $dst, ${imm}ll",
               [(set GPR:$dst, (i32 imm:$imm))]> {
 
   bits<3> mode;
