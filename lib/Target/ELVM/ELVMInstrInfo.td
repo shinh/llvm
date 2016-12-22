@@ -198,7 +198,7 @@ let isAsCheapAsAMove = 1 in {
 
 class MOV_RR<string OpcodeStr>
     : InstELVM<(outs GPR:$dst), (ins GPR:$src),
-              "mov $dst $src",
+              "mov $dst, $src",
               []> {
   bits<4> op;
   bits<1> ELVMSrc;
@@ -303,33 +303,33 @@ def LD_pseudo
 */
 
 // STORE instructions
-class STORE_BPF<bits<2> SizeOp, string OpcodeStr, list<dag> Pattern>
-    : InstELVM<(outs), (ins GPR:$src, MEMri:$addr),
-              "*("#OpcodeStr#" *)($addr) = $src",
+class STORE<bits<2> SizeOp, list<dag> Pattern>
+    : InstELVM<(outs), (ins GPR:$src, GPR:$dst),
+              "store $src, $dst",
               Pattern> {
   bits<3> mode;
   bits<2> size;
   bits<4> src;
-  bits<20> addr;
+  bits<4> dst;
 
   let Inst{63-61} = mode;
   let Inst{60-59} = size;
-  let Inst{51-48} = addr{19-16}; // base reg
+  let Inst{51-48} = dst;
   let Inst{55-52} = src;
-  let Inst{47-32} = addr{15-0}; // offset
+  //let Inst{47-32} = addr{15-0}; // offset
 
   let mode = 3;     // ELVM_MEM
   let size = SizeOp;
   let ELVMClass = 3; // ELVM_STX
 }
 
-class STOREi32<bits<2> Opc, string OpcodeStr, PatFrag OpNode>
-    : STORE_BPF<Opc, OpcodeStr, [(OpNode i32:$src, ADDRri:$addr)]>;
+class STOREi32<bits<2> Opc, PatFrag OpNode>
+    : STORE<Opc, [(OpNode i32:$src, i32:$dst)]>;
 
-def STW : STOREi32<0x0, "u32a", truncstorei32>;
-def STH : STOREi32<0x1, "u16", truncstorei16>;
-def STB : STOREi32<0x2, "u8", truncstorei8>;
-def STX : STOREi32<0x3, "u32b", store>;
+def STW : STOREi32<0x0, truncstorei32>;
+def STH : STOREi32<0x1, truncstorei16>;
+def STB : STOREi32<0x2, truncstorei8>;
+def STD : STOREi32<0x3, store>;
 
 // LOAD instructions
 class LOAD<bits<2> SizeOp, string OpcodeStr, list<dag> Pattern>
