@@ -51,6 +51,9 @@ void ELVMInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
   if (I != MBB.end())
     DL = I->getDebugLoc();
 
+  // TODO
+  abort();
+#if 0
   if (RC == &ELVM::GPRRegClass)
     BuildMI(MBB, I, DL, get(ELVM::STD))
         .addReg(SrcReg, getKillRegState(IsKill))
@@ -58,6 +61,7 @@ void ELVMInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
         .addImm(0);
   else
     llvm_unreachable("Can't store this register to stack slot");
+#endif
 }
 
 void ELVMInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,

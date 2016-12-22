@@ -303,9 +303,10 @@ def LD_pseudo
 */
 
 // STORE instructions
-class STORE<bits<2> SizeOp, string OpcodeStr, list<dag> Pattern>
+class STORE_BPF<bits<2> SizeOp, string OpcodeStr, list<dag> Pattern>
     : InstELVM<(outs), (ins GPR:$src, MEMri:$addr),
-              "*("#OpcodeStr#" *)($addr) = $src", Pattern> {
+              "*("#OpcodeStr#" *)($addr) = $src",
+              Pattern> {
   bits<3> mode;
   bits<2> size;
   bits<4> src;
@@ -323,12 +324,12 @@ class STORE<bits<2> SizeOp, string OpcodeStr, list<dag> Pattern>
 }
 
 class STOREi32<bits<2> Opc, string OpcodeStr, PatFrag OpNode>
-    : STORE<Opc, OpcodeStr, [(OpNode i32:$src, ADDRri:$addr)]>;
+    : STORE_BPF<Opc, OpcodeStr, [(OpNode i32:$src, ADDRri:$addr)]>;
 
-def STW : STOREi32<0x0, "u32", truncstorei32>;
+def STW : STOREi32<0x0, "u32a", truncstorei32>;
 def STH : STOREi32<0x1, "u16", truncstorei16>;
 def STB : STOREi32<0x2, "u8", truncstorei8>;
-def STD : STOREi32<0x3, "u32", store>;
+def STX : STOREi32<0x3, "u32b", store>;
 
 // LOAD instructions
 class LOAD<bits<2> SizeOp, string OpcodeStr, list<dag> Pattern>
@@ -353,10 +354,10 @@ class LOAD<bits<2> SizeOp, string OpcodeStr, list<dag> Pattern>
 class LOADi32<bits<2> SizeOp, string OpcodeStr, PatFrag OpNode>
     : LOAD<SizeOp, OpcodeStr, [(set i32:$dst, (OpNode ADDRri:$addr))]>;
 
-def LDW : LOADi32<0x0, "u32", zextloadi32>;
+def LDW : LOADi32<0x0, "u32c", zextloadi32>;
 def LDH : LOADi32<0x1, "u16", zextloadi16>;
 def LDB : LOADi32<0x2, "u8", zextloadi8>;
-def LDD : LOADi32<0x3, "u32", load>;
+def LDD : LOADi32<0x3, "u32d", load>;
 
 class BRANCH<bits<4> Opc, string OpcodeStr, list<dag> Pattern>
     : InstELVM<(outs), (ins brtarget:$BrDst),
@@ -473,10 +474,12 @@ def : Pat<(i32 (and (i32 GPR:$src), 0xffffFFFF)),
 def : Pat<(ELVMcall tglobaladdr:$dst), (JAL tglobaladdr:$dst)>;
 def : Pat<(ELVMcall imm:$dst), (JAL imm:$dst)>;
 
+/*
 // Loads
 def : Pat<(extloadi8  ADDRri:$src), (i32 (LDB ADDRri:$src))>;
 def : Pat<(extloadi16 ADDRri:$src), (i32 (LDH ADDRri:$src))>;
 def : Pat<(extloadi32 ADDRri:$src), (i32 (LDW ADDRri:$src))>;
+*/
 
 // Atomics
 class XADD<bits<2> SizeOp, string OpcodeStr, PatFrag OpNode>
@@ -500,7 +503,7 @@ class XADD<bits<2> SizeOp, string OpcodeStr, PatFrag OpNode>
 }
 
 let Constraints = "$dst = $val" in {
-def XADD32 : XADD<0, "u32", atomic_load_add_32>;
+def XADD32 : XADD<0, "u32e", atomic_load_add_32>;
 }
 
 // bswap16, bswap32, bswap32
