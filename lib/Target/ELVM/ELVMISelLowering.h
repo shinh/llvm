@@ -58,9 +58,6 @@ private:
                           const SDLoc &DL, SelectionDAG &DAG,
                           SmallVectorImpl<SDValue> &InVals) const;
 
-  // Maximum number of arguments to a call
-  static const unsigned MaxArgs;
-
   // Lower a call into CALLSEQ_START - ELVMISD:CALL - CALLSEQ_END chain
   SDValue LowerCall(TargetLowering::CallLoweringInfo &CLI,
                     SmallVectorImpl<SDValue> &InVals) const override;

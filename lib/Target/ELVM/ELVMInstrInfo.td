@@ -446,14 +446,14 @@ let isReturn = 1, isTerminator = 1, hasDelaySlot=0, isBarrier = 1,
 }
 
 // ADJCALLSTACKDOWN/UP pseudo insns
-let Defs = [D], Uses = [D] in {
+//let Defs = [D], Uses = [D] in {
 def ADJCALLSTACKDOWN : Pseudo<(outs), (ins i32imm:$amt),
                               "#ADJCALLSTACKDOWN $amt",
                               [(ELVMcallseq_start timm:$amt)]>;
 def ADJCALLSTACKUP   : Pseudo<(outs), (ins i32imm:$amt1, i32imm:$amt2),
                               "#ADJCALLSTACKUP $amt1 $amt2",
                               [(ELVMcallseq_end timm:$amt1, timm:$amt2)]>;
-}
+//}
 
 let usesCustomInserter = 1 in {
   def Select : Pseudo<(outs GPR:$dst),

@@ -211,11 +211,10 @@ SDValue ELVMTargetLowering::LowerFormalArguments(
   return Chain;
 }
 
-const unsigned ELVMTargetLowering::MaxArgs = 5;
-
 SDValue ELVMTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
-                                     SmallVectorImpl<SDValue> &InVals) const {
+                                      SmallVectorImpl<SDValue> &InVals) const {
   SelectionDAG &DAG = CLI.DAG;
+  SDLoc &DL = CLI.DL;
   auto &Outs = CLI.Outs;
   auto &OutVals = CLI.OutVals;
   auto &Ins = CLI.Ins;
@@ -245,9 +244,6 @@ SDValue ELVMTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
 
   unsigned NumBytes = CCInfo.getNextStackOffset();
 
-  if (Outs.size() > MaxArgs)
-    fail(CLI.DL, DAG, "too many args to ", Callee);
-
   for (auto &Arg : Outs) {
     ISD::ArgFlagsTy Flags = Arg.Flags;
     if (!Flags.isByVal())
@@ -260,12 +256,9 @@ SDValue ELVMTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
   Chain = DAG.getCALLSEQ_START(
       Chain, DAG.getConstant(NumBytes, CLI.DL, PtrVT, true), CLI.DL);
 
-  SmallVector<std::pair<unsigned, SDValue>, MaxArgs> RegsToPass;
-
+#if 0
   // Walk arg assignments
-  for (unsigned i = 0,
-                e = std::min(static_cast<unsigned>(ArgLocs.size()), MaxArgs);
-       i != e; ++i) {
+  for (unsigned i = 0; i != ArgLocs.size(); ++i) {
     CCValAssign &VA = ArgLocs[i];
     SDValue Arg = OutVals[i];
 
@@ -292,9 +285,48 @@ SDValue ELVMTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
     else
       llvm_unreachable("call arg pass bug");
   }
+#endif
+
+#if 0
+  fprintf(stderr, "hey\n");
+  const DataLayout &TD = DAG.getDataLayout();
+  for (unsigned i = 0; i != ArgLocs.size(); i++) {
+    fprintf(stderr, "hey %u/%zu\n", i, ArgLocs.size());
+    MVT LocVT = ArgLocs[i].getLocVT();
+    unsigned Offset = CCInfo.AllocateStack(
+        TD.getTypeAllocSize(EVT(LocVT).getTypeForEVT(CCInfo.getContext())),
+        TD.getABITypeAlignment(
+            EVT(LocVT).getTypeForEVT(CCInfo.getContext())));
+    CCInfo.addLoc(CCValAssign::getMem(i, LocVT, Offset, LocVT,
+                                      CCValAssign::Full));
+  }
+#endif
+
+  fprintf(stderr, "hey\n");
+  for (unsigned i = ArgLocs.size(); i != 0;) {
+    --i;
+    CCValAssign &VA = ArgLocs[i];
+    SDValue Arg = OutVals[i];
+
+    assert(VA.isMemLoc());
+
+    // TODO: Check if the comment is true.
+    // SP points to one stack slot further so add one to adjust it.
+    SDValue PtrOff = DAG.getNode(
+        ISD::ADD, DL, getPointerTy(DAG.getDataLayout()),
+        DAG.getRegister(ELVM::SP, getPointerTy(DAG.getDataLayout())),
+        //DAG.getCopyFromReg(Chain, DL, ELVM::SP, getPointerTy(DAG.getDataLayout())),
+        DAG.getIntPtrConstant(VA.getLocMemOffset() /*+ 1*/, DL));
+    //Chain = DAG.getCopyToReg(Chain, DL, ELVM::SP, PtrOff);
+    Chain =
+        DAG.getStore(Chain, DL, Arg, PtrOff,
+                     MachinePointerInfo::getStack(MF, VA.getLocMemOffset()),
+                     0);
+  }
 
   SDValue InFlag;
 
+#if 0
   // Build a sequence of copy-to-reg nodes chained together with token chain and
   // flag operands which copy the outgoing args into registers.  The InFlag in
   // necessary since all emitted instructions must be stuck together.
@@ -302,6 +334,7 @@ SDValue ELVMTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
     Chain = DAG.getCopyToReg(Chain, CLI.DL, Reg.first, Reg.second, InFlag);
     InFlag = Chain.getValue(1);
   }
+#endif
 
   // If the callee is a GlobalAddress node (quite common, every direct call is)
   // turn it into a TargetGlobalAddress node so that legalize doesn't hack it.
@@ -318,10 +351,12 @@ SDValue ELVMTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
   Ops.push_back(Chain);
   Ops.push_back(Callee);
 
+#if 0
   // Add argument registers to the end of the list so that they are
   // known live into the call.
   for (auto &Reg : RegsToPass)
     Ops.push_back(DAG.getRegister(Reg.first, Reg.second.getValueType()));
+#endif
 
   if (InFlag.getNode())
     Ops.push_back(InFlag);
