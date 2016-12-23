@@ -305,8 +305,8 @@ def LD_pseudo
 // STORE instructions
 class STORE<bits<2> SizeOp, list<dag> Pattern>
     : InstELVM<(outs), (ins GPR:$src, GPR:$dst),
-              "store $src, $dst",
-              Pattern> {
+               "store $src, $dst",
+               Pattern> {
   bits<3> mode;
   bits<2> size;
   bits<4> src;
@@ -332,9 +332,10 @@ def STB : STOREi32<0x2, truncstorei8>;
 def STD : STOREi32<0x3, store>;
 
 // LOAD instructions
-class LOAD<bits<2> SizeOp, string OpcodeStr, list<dag> Pattern>
-    : InstELVM<(outs GPR:$dst), (ins MEMri:$addr),
-              "$dst = *("#OpcodeStr#" *)($addr)", Pattern> {
+class LOAD<bits<2> SizeOp, list<dag> Pattern>
+    : InstELVM<(outs GPR:$dst), (ins GPR:$src),
+               "load $dst, $src",
+               Pattern> {
   bits<3> mode;
   bits<2> size;
   bits<4> dst;
@@ -351,13 +352,13 @@ class LOAD<bits<2> SizeOp, string OpcodeStr, list<dag> Pattern>
   let ELVMClass = 1; // ELVM_LDX
 }
 
-class LOADi32<bits<2> SizeOp, string OpcodeStr, PatFrag OpNode>
-    : LOAD<SizeOp, OpcodeStr, [(set i32:$dst, (OpNode ADDRri:$addr))]>;
+class LOADi32<bits<2> SizeOp, PatFrag OpNode>
+    : LOAD<SizeOp, [(set i32:$dst, (OpNode i32:$src))]>;
 
-def LDW : LOADi32<0x0, "u32c", zextloadi32>;
-def LDH : LOADi32<0x1, "u16", zextloadi16>;
-def LDB : LOADi32<0x2, "u8", zextloadi8>;
-def LDD : LOADi32<0x3, "u32d", load>;
+def LDW : LOADi32<0x0, zextloadi32>;
+def LDH : LOADi32<0x1, zextloadi16>;
+def LDB : LOADi32<0x2, zextloadi8>;
+def LDD : LOADi32<0x3, load>;
 
 class BRANCH<bits<4> Opc, string OpcodeStr, list<dag> Pattern>
     : InstELVM<(outs), (ins brtarget:$BrDst),
@@ -397,7 +398,7 @@ let isBranch = 1, isTerminator = 1, hasDelaySlot=0, isBarrier = 1 in {
 }
 
 // Jump and link
-let isCall=1, hasDelaySlot=0, Uses = [D],
+let isCall=1, hasDelaySlot=0 /*, Uses = [D]*/,
     // Potentially clobbered registers
     Defs = [A, B, C, D] in {
   def JAL  : CALL<"call">;

@@ -1640,7 +1640,7 @@ bool TwoAddressInstructionPass::runOnMachineFunction(MachineFunction &Func) {
   MRI->leaveSSA();
 
   // TODO: Remove this. See TODO in ELVMISelLowering.cpp.
-  return false;
+  //return false;
 
   TiedOperandMap TiedOperands;
   for (MachineFunction::iterator MBBI = MF->begin(), MBBE = MF->end();
