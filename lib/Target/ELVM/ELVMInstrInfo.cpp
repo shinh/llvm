@@ -51,17 +51,23 @@ void ELVMInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
   if (I != MBB.end())
     DL = I->getDebugLoc();
 
-  // TODO
-  abort();
-#if 0
-  if (RC == &ELVM::GPRRegClass)
+  if (RC == &ELVM::GPRRegClass) {
+    if (FI) {
+      BuildMI(MBB, I, DL, get(ELVM::SUB_ri), ELVM::BP)
+          .addReg(ELVM::BP)
+          .addImm(FI);
+    }
     BuildMI(MBB, I, DL, get(ELVM::STD))
         .addReg(SrcReg, getKillRegState(IsKill))
-        .addFrameIndex(FI)
-        .addImm(0);
-  else
+        .addReg(ELVM::BP);
+    if (FI) {
+      BuildMI(MBB, I, DL, get(ELVM::ADD_ri), ELVM::BP)
+          .addReg(ELVM::BP)
+          .addImm(FI);
+    }
+  } else {
     llvm_unreachable("Can't store this register to stack slot");
-#endif
+  }
 }
 
 void ELVMInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
@@ -73,10 +79,22 @@ void ELVMInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
   if (I != MBB.end())
     DL = I->getDebugLoc();
 
-  if (RC == &ELVM::GPRRegClass)
-    BuildMI(MBB, I, DL, get(ELVM::LDD), DestReg).addFrameIndex(FI).addImm(0);
-  else
+  if (RC == &ELVM::GPRRegClass) {
+    if (FI) {
+      BuildMI(MBB, I, DL, get(ELVM::SUB_ri), ELVM::BP)
+          .addReg(ELVM::BP)
+          .addImm(FI);
+    }
+    BuildMI(MBB, I, DL, get(ELVM::LDD), DestReg)
+        .addReg(ELVM::BP);
+    if (FI) {
+      BuildMI(MBB, I, DL, get(ELVM::ADD_ri), ELVM::BP)
+          .addReg(ELVM::BP)
+          .addImm(FI);
+    }
+  } else {
     llvm_unreachable("Can't load this register from stack slot");
+  }
 }
 
 bool ELVMInstrInfo::analyzeBranch(MachineBasicBlock &MBB,

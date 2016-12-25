@@ -123,8 +123,8 @@ ELVMTargetLowering::ELVMTargetLowering(const TargetMachine &TM,
   setBooleanContents(ZeroOrOneBooleanContent);
 
   // Function alignments (log2)
-  setMinFunctionAlignment(3);
-  setPrefFunctionAlignment(3);
+  //setMinFunctionAlignment(1);
+  //setPrefFunctionAlignment(1);
 
   // inline memcpy() for kernel to see explicit copy
   MaxStoresPerMemset = MaxStoresPerMemsetOptSize = 128;
