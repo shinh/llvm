@@ -18,5 +18,3 @@ def RetCC_ELVM : CallingConv<[CCIfType<[i32], CCAssignToReg<[A]>>]>;
 def CC_ELVM : CallingConv<[
   CCAssignToStack<4, 4>
 ]>;
-
-def CSR : CalleeSavedRegs<(add BP)>;

@@ -32,9 +32,9 @@ ELVMInstrInfo::ELVMInstrInfo()
     : ELVMGenInstrInfo(ELVM::ADJCALLSTACKDOWN, ELVM::ADJCALLSTACKUP) {}
 
 void ELVMInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
-                               MachineBasicBlock::iterator I,
-                               const DebugLoc &DL, unsigned DestReg,
-                               unsigned SrcReg, bool KillSrc) const {
+                                MachineBasicBlock::iterator I,
+                                const DebugLoc &DL, unsigned DestReg,
+                                unsigned SrcReg, bool KillSrc) const {
   if (ELVM::GPRRegClass.contains(DestReg, SrcReg))
     BuildMI(MBB, I, DL, get(ELVM::MOV_rr), DestReg)
         .addReg(SrcReg, getKillRegState(KillSrc));
@@ -43,15 +43,16 @@ void ELVMInstrInfo::copyPhysReg(MachineBasicBlock &MBB,
 }
 
 void ELVMInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
-                                       MachineBasicBlock::iterator I,
-                                       unsigned SrcReg, bool IsKill, int FI,
-                                       const TargetRegisterClass *RC,
-                                       const TargetRegisterInfo *TRI) const {
+                                        MachineBasicBlock::iterator I,
+                                        unsigned SrcReg, bool IsKill, int FI,
+                                        const TargetRegisterClass *RC,
+                                        const TargetRegisterInfo *TRI) const {
   DebugLoc DL;
   if (I != MBB.end())
     DL = I->getDebugLoc();
 
   if (RC == &ELVM::GPRRegClass) {
+    assert(SrcReg != ELVM::BP);
     if (FI) {
       BuildMI(MBB, I, DL, get(ELVM::SUB_ri), ELVM::BP)
           .addReg(ELVM::BP)
@@ -71,15 +72,16 @@ void ELVMInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
 }
 
 void ELVMInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
-                                        MachineBasicBlock::iterator I,
-                                        unsigned DestReg, int FI,
-                                        const TargetRegisterClass *RC,
-                                        const TargetRegisterInfo *TRI) const {
+                                         MachineBasicBlock::iterator I,
+                                         unsigned DestReg, int FI,
+                                         const TargetRegisterClass *RC,
+                                         const TargetRegisterInfo *TRI) const {
   DebugLoc DL;
   if (I != MBB.end())
     DL = I->getDebugLoc();
 
   if (RC == &ELVM::GPRRegClass) {
+    assert(DestReg != ELVM::BP);
     if (FI) {
       BuildMI(MBB, I, DL, get(ELVM::SUB_ri), ELVM::BP)
           .addReg(ELVM::BP)
@@ -98,10 +100,10 @@ void ELVMInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
 }
 
 bool ELVMInstrInfo::analyzeBranch(MachineBasicBlock &MBB,
-                                 MachineBasicBlock *&TBB,
-                                 MachineBasicBlock *&FBB,
-                                 SmallVectorImpl<MachineOperand> &Cond,
-                                 bool AllowModify) const {
+                                  MachineBasicBlock *&TBB,
+                                  MachineBasicBlock *&FBB,
+                                  SmallVectorImpl<MachineOperand> &Cond,
+                                  bool AllowModify) const {
   // Start from the bottom of the block and work up, examining the
   // terminator instructions.
   MachineBasicBlock::iterator I = MBB.end();
@@ -153,11 +155,11 @@ bool ELVMInstrInfo::analyzeBranch(MachineBasicBlock &MBB,
 }
 
 unsigned ELVMInstrInfo::insertBranch(MachineBasicBlock &MBB,
-                                    MachineBasicBlock *TBB,
-                                    MachineBasicBlock *FBB,
-                                    ArrayRef<MachineOperand> Cond,
-                                    const DebugLoc &DL,
-                                    int *BytesAdded) const {
+                                     MachineBasicBlock *TBB,
+                                     MachineBasicBlock *FBB,
+                                     ArrayRef<MachineOperand> Cond,
+                                     const DebugLoc &DL,
+                                     int *BytesAdded) const {
   assert(!BytesAdded && "code size not handled");
 
   // Shouldn't be a fall through.
@@ -174,7 +176,7 @@ unsigned ELVMInstrInfo::insertBranch(MachineBasicBlock &MBB,
 }
 
 unsigned ELVMInstrInfo::removeBranch(MachineBasicBlock &MBB,
-                                    int *BytesRemoved) const {
+                                     int *BytesRemoved) const {
   assert(!BytesRemoved && "code size not handled");
 
   MachineBasicBlock::iterator I = MBB.end();

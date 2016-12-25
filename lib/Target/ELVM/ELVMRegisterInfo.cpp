@@ -31,15 +31,15 @@ ELVMRegisterInfo::ELVMRegisterInfo()
 
 const MCPhysReg *
 ELVMRegisterInfo::getCalleeSavedRegs(const MachineFunction *MF) const {
+  static const MCPhysReg CSR_SaveList[] = { 0 };
   return CSR_SaveList;
 }
 
 BitVector ELVMRegisterInfo::getReservedRegs(const MachineFunction &MF) const {
   BitVector Reserved(getNumRegs());
-  //Reserved.set(ELVM::R10); // R10 is read only frame pointer
-  //Reserved.set(ELVM::R11); // R11 is pseudo stack pointer
-  Reserved.set(ELVM::BP);
-  Reserved.set(ELVM::SP);
+  markSuperRegs(Reserved, ELVM::BP);
+  markSuperRegs(Reserved, ELVM::SP);
+  assert(checkAllSuperRegsMarked(Reserved));
   return Reserved;
 }
 
