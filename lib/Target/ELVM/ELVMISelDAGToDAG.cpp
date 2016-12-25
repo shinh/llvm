@@ -49,13 +49,14 @@ private:
   void Select(SDNode *N) override;
 
   // Complex Pattern for address selection.
-  bool SelectAddr(SDValue Addr, SDValue &Base, SDValue &Offset);
+  bool SelectAddr(SDValue Addr, SDValue &Base);
   bool SelectFIAddr(SDValue Addr, SDValue &Base, SDValue &Offset);
 };
 }
 
 // ComplexPattern used on ELVM Load/Store instructions
-bool ELVMDAGToDAGISel::SelectAddr(SDValue Addr, SDValue &Base, SDValue &Offset) {
+bool ELVMDAGToDAGISel::SelectAddr(SDValue Addr, SDValue &Base) {
+#if 0
   // if Address is FI, get the TargetFrameIndex.
   SDLoc DL(Addr);
   if (FrameIndexSDNode *FIN = dyn_cast<FrameIndexSDNode>(Addr)) {
@@ -87,6 +88,17 @@ bool ELVMDAGToDAGISel::SelectAddr(SDValue Addr, SDValue &Base, SDValue &Offset) 
 
   Base   = Addr;
   Offset = CurDAG->getTargetConstant(0, DL, MVT::i32);
+#endif
+  // if Address is FI, get the TargetFrameIndex.
+#if 0
+  SDLoc DL(Addr);
+  if (FrameIndexSDNode *FIN = dyn_cast<FrameIndexSDNode>(Addr)) {
+    Base   = CurDAG->getTargetFrameIndex(FIN->getIndex(), MVT::i32);
+    return true;
+  }
+#endif
+
+  Base = Addr;
   return true;
 }
 

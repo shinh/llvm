@@ -61,7 +61,7 @@ ELVMTargetLowering::ELVMTargetLowering(const TargetMachine &TM,
   // Compute derived properties from the register classes
   computeRegisterProperties(STI.getRegisterInfo());
 
-  setStackPointerRegisterToSaveRestore(ELVM::D);
+  setStackPointerRegisterToSaveRestore(ELVM::SP);
 
   setOperationAction(ISD::BR_CC, MVT::i32, Custom);
   setOperationAction(ISD::BR_JT, MVT::Other, Expand);
@@ -310,13 +310,14 @@ SDValue ELVMTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
 
     assert(VA.isMemLoc());
 
+    SDValue StackPtr = DAG.getCopyFromReg(Chain, DL, ELVM::SP, getPointerTy(DAG.getDataLayout()));
     // TODO: Check if the comment is true.
     // SP points to one stack slot further so add one to adjust it.
     SDValue PtrOff = DAG.getNode(
         ISD::ADD, DL, getPointerTy(DAG.getDataLayout()),
-        DAG.getRegister(ELVM::SP, getPointerTy(DAG.getDataLayout())),
-        //DAG.getCopyFromReg(Chain, DL, ELVM::SP, getPointerTy(DAG.getDataLayout())),
-        DAG.getIntPtrConstant(VA.getLocMemOffset() /*+ 1*/, DL));
+        //DAG.getRegister(ELVM::SP, getPointerTy(DAG.getDataLayout())),
+        StackPtr,
+        DAG.getIntPtrConstant(VA.getLocMemOffset(), DL));
     //Chain = DAG.getCopyToReg(Chain, DL, ELVM::SP, PtrOff);
     Chain =
         DAG.getStore(Chain, DL, Arg, PtrOff,

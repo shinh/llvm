@@ -18,11 +18,16 @@
 
 namespace llvm {
 class ELVMSubtarget;
+struct ELVMRegisterInfo;
 
 class ELVMFrameLowering : public TargetFrameLowering {
+private:
+  const ELVMSubtarget &STI;
+  const TargetInstrInfo &TII;
+  const ELVMRegisterInfo *TRI;
+
 public:
-  explicit ELVMFrameLowering(const ELVMSubtarget &sti)
-      : TargetFrameLowering(TargetFrameLowering::StackGrowsDown, 1, 0) {}
+  explicit ELVMFrameLowering(const ELVMSubtarget &STI);
 
   void emitPrologue(MachineFunction &MF, MachineBasicBlock &MBB) const override;
   void emitEpilogue(MachineFunction &MF, MachineBasicBlock &MBB) const override;

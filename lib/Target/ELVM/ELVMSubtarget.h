@@ -55,7 +55,7 @@ public:
   const SelectionDAGTargetInfo *getSelectionDAGInfo() const override {
     return &TSInfo;
   }
-  const TargetRegisterInfo *getRegisterInfo() const override {
+  const ELVMRegisterInfo *getRegisterInfo() const override {
     return &InstrInfo.getRegisterInfo();
   }
 };

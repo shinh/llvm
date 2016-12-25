@@ -50,7 +50,7 @@ static void printExpr(const MCExpr *Expr, raw_ostream &O) {
 }
 
 void ELVMInstPrinter::printOperand(const MCInst *MI, unsigned OpNo,
-                                  raw_ostream &O, const char *Modifier) {
+                                   raw_ostream &O, const char *Modifier) {
   assert((Modifier == 0 || Modifier[0] == 0) && "No modifiers supported");
   const MCOperand &Op = MI->getOperand(OpNo);
   if (Op.isReg()) {
@@ -64,7 +64,7 @@ void ELVMInstPrinter::printOperand(const MCInst *MI, unsigned OpNo,
 }
 
 void ELVMInstPrinter::printMemOperand(const MCInst *MI, int OpNo, raw_ostream &O,
-                                     const char *Modifier) {
+                                      const char *Modifier) {
   const MCOperand &RegOp = MI->getOperand(OpNo);
   const MCOperand &OffsetOp = MI->getOperand(OpNo + 1);
 

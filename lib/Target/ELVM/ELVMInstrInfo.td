@@ -53,8 +53,10 @@ def u32imm   : Operand<i32> {
 def i32immSExt32 : PatLeaf<(imm),
                 [{return isInt<32>(N->getSExtValue()); }]>;
 
+def addr : ComplexPattern<iPTR, 1, "SelectAddr", [], []>;
+
 // Addressing modes.
-def ADDRri : ComplexPattern<i32, 2, "SelectAddr", [], []>;
+//def ADDRri : ComplexPattern<i32, 2, "SelectAddr", [], []>;
 def FIri : ComplexPattern<i32, 2, "SelectFIAddr", [add, or], []>;
 
 // Address operands
@@ -324,7 +326,7 @@ class STORE<bits<2> SizeOp, list<dag> Pattern>
 }
 
 class STOREi32<bits<2> Opc, PatFrag OpNode>
-    : STORE<Opc, [(OpNode i32:$src, i32:$dst)]>;
+    : STORE<Opc, [(OpNode i32:$src, addr:$dst)]>;
 
 def STW : STOREi32<0x0, truncstorei32>;
 def STH : STOREi32<0x1, truncstorei16>;
@@ -353,7 +355,7 @@ class LOAD<bits<2> SizeOp, list<dag> Pattern>
 }
 
 class LOADi32<bits<2> SizeOp, PatFrag OpNode>
-    : LOAD<SizeOp, [(set i32:$dst, (OpNode i32:$src))]>;
+    : LOAD<SizeOp, [(set i32:$dst, (OpNode addr:$src))]>;
 
 def LDW : LOADi32<0x0, zextloadi32>;
 def LDH : LOADi32<0x1, zextloadi16>;
@@ -443,7 +445,7 @@ class RET<string OpcodeStr>
 
 let isReturn = 1, isTerminator = 1, hasDelaySlot=0, isBarrier = 1,
     isNotDuplicable = 1 in {
-  def RET : RET<"exit">;
+  def RET : RET<"ret">;
 }
 
 // ADJCALLSTACKDOWN/UP pseudo insns
@@ -482,6 +484,7 @@ def : Pat<(extloadi16 ADDRri:$src), (i32 (LDH ADDRri:$src))>;
 def : Pat<(extloadi32 ADDRri:$src), (i32 (LDW ADDRri:$src))>;
 */
 
+/*
 // Atomics
 class XADD<bits<2> SizeOp, string OpcodeStr, PatFrag OpNode>
     : InstELVM<(outs GPR:$dst), (ins MEMri:$addr, GPR:$val),
@@ -506,6 +509,7 @@ class XADD<bits<2> SizeOp, string OpcodeStr, PatFrag OpNode>
 let Constraints = "$dst = $val" in {
 def XADD32 : XADD<0, "u32e", atomic_load_add_32>;
 }
+*/
 
 // bswap16, bswap32, bswap32
 class BSWAP<bits<32> SizeOp, string OpcodeStr, list<dag> Pattern>
