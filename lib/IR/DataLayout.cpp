@@ -33,6 +33,10 @@
 #include <cstdlib>
 using namespace llvm;
 
+namespace llvm {
+bool IsELVM;
+}
+
 //===----------------------------------------------------------------------===//
 // Support for StructLayout
 //===----------------------------------------------------------------------===//
@@ -178,6 +182,11 @@ static const LayoutAlignElem DefaultAlignments[] = {
 void DataLayout::reset(StringRef Desc) {
   clear();
 
+  IsELVM = false;
+  if (Desc.take_front(5) == "ELVM-") {
+    Desc = Desc.substr(5);
+    IsELVM = true;
+  }
   LayoutMap = nullptr;
   BigEndian = false;
   StackNaturalAlign = 0;
@@ -186,7 +195,9 @@ void DataLayout::reset(StringRef Desc) {
 
   // Default alignments
   for (const LayoutAlignElem &E : DefaultAlignments) {
-    setAlignment((AlignTypeEnum)E.AlignType, E.ABIAlign, E.PrefAlign,
+    setAlignment((AlignTypeEnum)E.AlignType,
+                 E.ABIAlign,
+                 E.PrefAlign,
                  E.TypeBitWidth);
   }
   setPointerAlignment(0, 8, 8, 8);
@@ -215,9 +226,11 @@ static unsigned getInt(StringRef R) {
 }
 
 /// Convert bits into bytes. Assert if not a byte width multiple.
-static unsigned inBytes(unsigned Bits) {
+unsigned DataLayout::inBytes(unsigned Bits) {
   if (Bits % 8)
     report_fatal_error("number of bits must be a byte width multiple");
+  if (IsELVM)
+    return (Bits + 31) / 32;
   return Bits / 8;
 }
 
@@ -411,6 +424,12 @@ bool DataLayout::operator==(const DataLayout &Other) const {
 void
 DataLayout::setAlignment(AlignTypeEnum align_type, unsigned abi_align,
                          unsigned pref_align, uint32_t bit_width) {
+  if (IsELVM) {
+    fprintf(stderr, "setAlignment: %u %u %u\n",
+            abi_align, pref_align, bit_width);
+    abi_align = 1;
+    pref_align = 1;
+  }
   if (!isUInt<24>(bit_width))
     report_fatal_error("Invalid bit width, must be a 24bit integer");
   if (!isUInt<16>(abi_align))
@@ -451,6 +470,13 @@ DataLayout::findPointerLowerBound(uint32_t AddressSpace) {
 void DataLayout::setPointerAlignment(uint32_t AddrSpace, unsigned ABIAlign,
                                      unsigned PrefAlign,
                                      uint32_t TypeByteWidth) {
+  if (IsELVM) {
+    fprintf(stderr, "setPointerAlignment: %u %u %u %u\n",
+            ABIAlign, PrefAlign, TypeByteWidth, AddrSpace);
+    ABIAlign = 1;
+    PrefAlign = 1;
+    TypeByteWidth = 1;
+  }
   if (PrefAlign < ABIAlign)
     report_fatal_error(
         "Preferred alignment cannot be less than the ABI alignment");

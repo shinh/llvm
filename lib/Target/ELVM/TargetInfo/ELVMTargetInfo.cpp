@@ -28,9 +28,11 @@ Target &getTheELVMTarget() {
 
 extern "C" void LLVMInitializeELVMTargetInfo() {
   TargetRegistry::RegisterTarget(getTheELVMTarget(), "elvm", "ELVM",
-                                 [](Triple::ArchType) { return false; }, true);
+                                 [](Triple::ArchType) { return false; });
+#if 0
   RegisterTarget<Triple::elvmel, /*HasJIT=*/true> X(getTheELVMleTarget(), "elvmel",
                                                    "ELVM (little endian)");
   RegisterTarget<Triple::elvmeb, /*HasJIT=*/true> Y(getTheELVMbeTarget(), "elvmeb",
                                                    "ELVM (big endian)");
+#endif
 }

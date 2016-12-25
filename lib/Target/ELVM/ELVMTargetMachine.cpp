@@ -31,7 +31,7 @@ extern "C" void LLVMInitializeELVMTarget() {
 
 // DataLayout: little or big endian
 static std::string computeDataLayout(const Triple &TT) {
-  return "e-m:e-p:32:32-i32:32-n32-S32";
+  return "ELVM-e-m:e-p:32:32-i32:32-n32-S32";
 }
 
 static Reloc::Model getEffectiveRelocModel(Optional<Reloc::Model> RM) {

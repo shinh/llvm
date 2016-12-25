@@ -22,7 +22,7 @@ class ELVMSubtarget;
 class ELVMFrameLowering : public TargetFrameLowering {
 public:
   explicit ELVMFrameLowering(const ELVMSubtarget &sti)
-      : TargetFrameLowering(TargetFrameLowering::StackGrowsDown, 8, 0) {}
+      : TargetFrameLowering(TargetFrameLowering::StackGrowsDown, 1, 0) {}
 
   void emitPrologue(MachineFunction &MF, MachineBasicBlock &MBB) const override;
   void emitEpilogue(MachineFunction &MF, MachineBasicBlock &MBB) const override;

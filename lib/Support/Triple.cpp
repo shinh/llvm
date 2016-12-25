@@ -28,6 +28,7 @@ StringRef Triple::getArchTypeName(ArchType Kind) {
   case avr:            return "avr";
   case bpfel:          return "bpfel";
   case bpfeb:          return "bpfeb";
+  case elvm:           return "elvm";
   case hexagon:        return "hexagon";
   case mips:           return "mips";
   case mipsel:         return "mipsel";
@@ -105,6 +106,8 @@ StringRef Triple::getArchTypePrefix(ArchType Kind) {
 
   case bpfel:
   case bpfeb:       return "bpf";
+
+  case elvm:        return "elvm";
 
   case sparcv9:
   case sparcel:
@@ -256,6 +259,7 @@ Triple::ArchType Triple::getArchTypeForLLVMName(StringRef Name) {
     .Case("armeb", armeb)
     .Case("avr", avr)
     .StartsWith("bpf", BPFArch)
+    .Case("elvm", elvm)
     .Case("mips", mips)
     .Case("mipsel", mipsel)
     .Case("mips64", mips64)
@@ -375,6 +379,7 @@ static Triple::ArchType parseArch(StringRef ArchName) {
     .Case("arm64", Triple::aarch64)
     .Case("arm", Triple::arm)
     .Case("armeb", Triple::armeb)
+    .Case("elvm", Triple::elvm)
     .Case("thumb", Triple::thumb)
     .Case("thumbeb", Triple::thumbeb)
     .Case("avr", Triple::avr)
@@ -607,6 +612,7 @@ static Triple::ObjectFormatType getDefaultFormat(const Triple &T) {
   case Triple::avr:
   case Triple::bpfeb:
   case Triple::bpfel:
+  case Triple::elvm:
   case Triple::hexagon:
   case Triple::lanai:
   case Triple::hsail:
@@ -1148,6 +1154,7 @@ static unsigned getArchPointerBitWidth(llvm::Triple::ArchType Arch) {
 
   case llvm::Triple::arm:
   case llvm::Triple::armeb:
+  case llvm::Triple::elvm:
   case llvm::Triple::hexagon:
   case llvm::Triple::le32:
   case llvm::Triple::mips:
@@ -1230,6 +1237,7 @@ Triple Triple::get32BitArchVariant() const {
   case Triple::spir:
   case Triple::arm:
   case Triple::armeb:
+  case Triple::elvm:
   case Triple::hexagon:
   case Triple::kalimba:
   case Triple::le32:
@@ -1278,6 +1286,7 @@ Triple Triple::get64BitArchVariant() const {
   switch (getArch()) {
   case Triple::UnknownArch:
   case Triple::avr:
+  case Triple::elvm:
   case Triple::hexagon:
   case Triple::kalimba:
   case Triple::lanai:
@@ -1430,6 +1439,7 @@ bool Triple::isLittleEndian() const {
   case Triple::arm:
   case Triple::avr:
   case Triple::bpfel:
+  case Triple::elvm:
   case Triple::hexagon:
   case Triple::hsail64:
   case Triple::hsail:
