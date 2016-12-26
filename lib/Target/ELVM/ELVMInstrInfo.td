@@ -409,7 +409,7 @@ class CALL<string OpcodeStr>
 
 // Jump always
 let isBranch = 1, isTerminator = 1, hasDelaySlot=0, isBarrier = 1 in {
-  def JMP : BRANCH<0x0, "goto", [(br bb:$BrDst)]>;
+  def JMP : BRANCH<0x0, "jmp", [(br bb:$BrDst)]>;
 }
 
 // Jump and link
