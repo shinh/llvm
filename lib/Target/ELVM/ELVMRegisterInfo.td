@@ -29,4 +29,8 @@ def GPR : RegisterClass<"ELVM", [i32], 24, (add B, C, D,
                                             A,  // return value
                                             SP, // stack ptr
                                             BP  // frame ptr
-                                           )>;
+                                           )> {
+  // tablegen is told to think 1byte is 8bits.
+  let Size = 8;
+  let Alignment = 8;
+}
