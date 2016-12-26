@@ -84,7 +84,7 @@ def ELVM_CC_GEU : PatLeaf<(imm),
 // jump instructions
 class JMP_RR<bits<4> Opc, string OpcodeStr, PatLeaf Cond>
     : InstELVM<(outs), (ins GPR:$dst, GPR:$src, brtarget:$BrDst),
-              "if $dst "#OpcodeStr#" $src goto $BrDst",
+              "j"#OpcodeStr#" $BrDst, $dst, $src",
               [(ELVMbrcc i32:$dst, i32:$src, Cond, bb:$BrDst)]> {
   bits<4> op;
   bits<1> ELVMSrc;
@@ -105,7 +105,7 @@ class JMP_RR<bits<4> Opc, string OpcodeStr, PatLeaf Cond>
 
 class JMP_RI<bits<4> Opc, string OpcodeStr, PatLeaf Cond>
     : InstELVM<(outs), (ins GPR:$dst, i32imm:$imm, brtarget:$BrDst),
-              "if $dst "#OpcodeStr#" $imm goto $BrDst",
+              "j"#OpcodeStr#" $BrDst, $dst, $imm",
               [(ELVMbrcc i32:$dst, i32immSExt32:$imm, Cond, bb:$BrDst)]> {
   bits<4> op;
   bits<1> ELVMSrc;
@@ -131,12 +131,12 @@ multiclass J<bits<4> Opc, string OpcodeStr, PatLeaf Cond> {
 
 let isBranch = 1, isTerminator = 1, hasDelaySlot=0 in {
 // cmp+goto instructions
-defm JEQ  : J<0x1, "==",  ELVM_CC_EQ>;
-defm JUGT : J<0x2, ">", ELVM_CC_GTU>;
-defm JUGE : J<0x3, ">=", ELVM_CC_GEU>;
-defm JNE  : J<0x5, "!=",  ELVM_CC_NE>;
-defm JSGT : J<0x6, "s>", ELVM_CC_GT>;
-defm JSGE : J<0x7, "s>=", ELVM_CC_GE>;
+defm JEQ  : J<0x1, "eq",  ELVM_CC_EQ>;
+defm JUGT : J<0x2, "gt", ELVM_CC_GTU>;
+defm JUGE : J<0x3, "ge", ELVM_CC_GEU>;
+defm JNE  : J<0x5, "ne",  ELVM_CC_NE>;
+defm JSGT : J<0x6, "gt", ELVM_CC_GT>;
+defm JSGE : J<0x7, "ge", ELVM_CC_GE>;
 }
 
 // ALU instructions
