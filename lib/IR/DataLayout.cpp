@@ -182,10 +182,12 @@ static const LayoutAlignElem DefaultAlignments[] = {
 void DataLayout::reset(StringRef Desc) {
   clear();
 
-  IsELVM = false;
-  if (Desc.take_front(5) == "ELVM-") {
-    Desc = Desc.substr(5);
-    IsELVM = true;
+  if (!Desc.empty()) {
+    IsELVM = false;
+    if (Desc.take_front(5) == "ELVM-") {
+      Desc = Desc.substr(5);
+      IsELVM = true;
+    }
   }
   LayoutMap = nullptr;
   BigEndian = false;
