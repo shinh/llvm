@@ -52,7 +52,9 @@ void ELVMInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
     DL = I->getDebugLoc();
 
   if (RC == &ELVM::GPRRegClass) {
+    fprintf(stderr, "storeRegToStackSlot: FI=%d\n", FI);
     assert(SrcReg != ELVM::BP);
+#if 0
     if (FI) {
       BuildMI(MBB, I, DL, get(ELVM::SUB_ri), ELVM::BP)
           .addReg(ELVM::BP)
@@ -66,6 +68,8 @@ void ELVMInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
           .addReg(ELVM::BP)
           .addImm(FI);
     }
+#endif
+    BuildMI(MBB, I, DL, get(ELVM::STOREFI)).addReg(SrcReg).addFrameIndex(FI);
   } else {
     llvm_unreachable("Can't store this register to stack slot");
   }
@@ -81,7 +85,9 @@ void ELVMInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
     DL = I->getDebugLoc();
 
   if (RC == &ELVM::GPRRegClass) {
+    fprintf(stderr, "loadRegFromStackSlot: FI=%d\n", FI);
     assert(DestReg != ELVM::BP);
+#if 0
     if (FI) {
       BuildMI(MBB, I, DL, get(ELVM::SUB_ri), ELVM::BP)
           .addReg(ELVM::BP)
@@ -94,6 +100,8 @@ void ELVMInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
           .addReg(ELVM::BP)
           .addImm(FI);
     }
+#endif
+    BuildMI(MBB, I, DL, get(ELVM::LOADFI), DestReg).addFrameIndex(FI);
   } else {
     llvm_unreachable("Can't load this register from stack slot");
   }

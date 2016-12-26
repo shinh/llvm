@@ -74,8 +74,7 @@ void ELVMRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
     return;
   }
 
-  int Offset = MF.getFrameInfo().getObjectOffset(FrameIndex) +
-               MI.getOperand(i + 1).getImm();
+  int Offset = MF.getFrameInfo().getObjectOffset(FrameIndex);
 
   if (!isInt<32>(Offset))
     llvm_unreachable("bug in frame offset");
@@ -95,8 +94,9 @@ void ELVMRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
     // Remove FI_ri instruction
     MI.eraseFromParent();
   } else {
-    MI.getOperand(i).ChangeToRegister(FrameReg, false);
-    MI.getOperand(i + 1).ChangeToImmediate(Offset);
+    MI.getOperand(i).ChangeToImmediate(Offset);
+    //MI.getOperand(i).ChangeToRegister(FrameReg, false);
+    //MI.getOperand(i + 1).ChangeToImmediate(Offset);
   }
 }
 
