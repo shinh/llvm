@@ -33,6 +33,7 @@ void ELVMFrameLowering::emitPrologue(MachineFunction &MF,
   MachineBasicBlock::iterator MBBI = MBB.begin();
   MachineFrameInfo &MFI = MF.getFrameInfo();
   DebugLoc DL = MBB.findDebugLoc(MBBI);
+  MFI.setOffsetAdjustment(-1);
   BuildMI(MBB, MBBI, DL, TII.get(ELVM::SUB_ri), ELVM::SP)
       .addReg(ELVM::SP)
       .addImm(1)

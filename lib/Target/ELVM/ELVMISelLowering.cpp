@@ -161,7 +161,7 @@ SDValue ELVMTargetLowering::LowerFormalArguments(
   }
 
   MachineFunction &MF = DAG.getMachineFunction();
-  MachineRegisterInfo &RegInfo = MF.getRegInfo();
+  MachineFrameInfo &MFI = MF.getFrameInfo();
 
   // Assign locations to all of the incoming arguments.
   SmallVector<CCValAssign, 16> ArgLocs;
@@ -169,39 +169,23 @@ SDValue ELVMTargetLowering::LowerFormalArguments(
   CCInfo.AnalyzeFormalArguments(Ins, CC_ELVM);
 
   for (auto &VA : ArgLocs) {
-    if (VA.isRegLoc()) {
-      // Arguments passed in registers
-      EVT RegVT = VA.getLocVT();
-      switch (RegVT.getSimpleVT().SimpleTy) {
-      default: {
-        errs() << "LowerFormalArguments Unhandled argument type: "
-               << RegVT.getEVTString() << '\n';
-        llvm_unreachable(0);
-      }
-      case MVT::i32:
-        unsigned VReg = RegInfo.createVirtualRegister(&ELVM::GPRRegClass);
-        RegInfo.addLiveIn(VA.getLocReg(), VReg);
-        SDValue ArgValue = DAG.getCopyFromReg(Chain, DL, VReg, RegVT);
+    // Sanity check.
+    assert(VA.isMemLoc());
 
-        // If this is an 8/16/32-bit value, it is really passed promoted to 64
-        // bits. Insert an assert[sz]ext to capture this, then truncate to the
-        // right size.
-        if (VA.getLocInfo() == CCValAssign::SExt)
-          ArgValue = DAG.getNode(ISD::AssertSext, DL, RegVT, ArgValue,
-                                 DAG.getValueType(VA.getValVT()));
-        else if (VA.getLocInfo() == CCValAssign::ZExt)
-          ArgValue = DAG.getNode(ISD::AssertZext, DL, RegVT, ArgValue,
-                                 DAG.getValueType(VA.getValVT()));
+    EVT LocVT = VA.getLocVT();
 
-        if (VA.getLocInfo() != CCValAssign::Full)
-          ArgValue = DAG.getNode(ISD::TRUNCATE, DL, VA.getValVT(), ArgValue);
+    // One for return address, the other for frame address.
+    int32_t Offset = VA.getLocMemOffset() + 2;
+    // Create the frame index object for this incoming parameter.
+    int FI = MFI.CreateFixedObject(LocVT.getSizeInBits() / 32, Offset, true);
+    fprintf(stderr, "size=%u fi=%d\n", LocVT.getSizeInBits(), FI);
 
-        InVals.push_back(ArgValue);
-      }
-    } else {
-      fail(DL, DAG, "defined with too many args");
-      InVals.push_back(DAG.getConstant(0, DL, VA.getLocVT()));
-    }
+    // Create the SelectionDAG nodes corresponding to a load
+    // from this parameter.
+    SDValue FIN = DAG.getFrameIndex(FI, getPointerTy(DAG.getDataLayout()));
+    InVals.push_back(DAG.getLoad(LocVT, DL, Chain, FIN,
+                                 MachinePointerInfo::getFixedStack(MF, FI),
+                                 0));
   }
 
   if (IsVarArg || MF.getFunction()->hasStructRetAttr()) {
