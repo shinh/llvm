@@ -93,6 +93,30 @@ void ELVMRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
 
     // Remove FI_ri instruction
     MI.eraseFromParent();
+  } else if (MI.getOpcode() == ELVM::STOREFI) {
+    unsigned reg = MI.getOperand(0).getReg();
+    BuildMI(MBB, ++II, DL, TII.get(ELVM::SUB_ri), ELVM::BP)
+        .addReg(ELVM::BP)
+        .addImm(-Offset);
+    BuildMI(MBB, II, DL, TII.get(ELVM::STD))
+        .addReg(reg)
+        .addReg(ELVM::BP);
+    BuildMI(MBB, II, DL, TII.get(ELVM::ADD_ri), ELVM::BP)
+        .addReg(ELVM::BP)
+        .addImm(-Offset);
+    MI.eraseFromParent();
+  } else if (MI.getOpcode() == ELVM::LOADFI) {
+    unsigned reg = MI.getOperand(0).getReg();
+    BuildMI(MBB, ++II, DL, TII.get(ELVM::SUB_ri), ELVM::BP)
+        .addReg(ELVM::BP)
+        .addImm(-Offset);
+    BuildMI(MBB, II, DL, TII.get(ELVM::LDD))
+        .addReg(reg)
+        .addReg(ELVM::BP);
+    BuildMI(MBB, II, DL, TII.get(ELVM::ADD_ri), ELVM::BP)
+        .addReg(ELVM::BP)
+        .addImm(-Offset);
+    MI.eraseFromParent();
   } else {
     MI.getOperand(i).ChangeToImmediate(Offset);
     //MI.getOperand(i).ChangeToRegister(FrameReg, false);

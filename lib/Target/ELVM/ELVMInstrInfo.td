@@ -56,7 +56,7 @@ def i32immSExt32 : PatLeaf<(imm),
 def addr : ComplexPattern<iPTR, 1, "SelectAddr", [], []>;
 
 // Addressing modes.
-//def ADDRri : ComplexPattern<i32, 2, "SelectAddr", [], []>;
+def ADDRri : ComplexPattern<i32, 2, "SelectAddr", [], []>;
 def FIri : ComplexPattern<i32, 2, "SelectFIAddr", [add, or], []>;
 
 // Address operands
@@ -363,16 +363,18 @@ def LDB : LOADi32<0x2, zextloadi8>;
 def LDD : LOADi32<0x3, load>;
 
 let isCodeGenOnly = 1 in {
-def STOREFI : Pseudo<(outs), (ins GPR:$src, i32imm:$fi),
-                     "sub BP, $fi    # STOREFI\n\t"
-                     "store $src, BP  # STOREFI\n\t"
-                     "add BP, $fi    # STOREFI\n",
-                     [(store i32:$src, i32:$fi)]>;
-def LOADFI : Pseudo<(outs GPR:$dst), (ins i32imm:$fi),
-                    "sub BP, $fi    # LOADFI\n\t"
-                    "load $dst, BP   # LOADFI\n\t"
-                    "add BP, $fi    # LOADFI\n",
-                    [(set i32:$dst, (load i32:$fi))]>;
+def STOREFI : Pseudo<(outs), (ins GPR:$src, MEMri:$addr),
+                      "STOREFI!",
+//                     "sub BP, $fi    # STOREFI\n\t"
+//                     "store $src, BP   # STOREFI\n\t"
+//                     "add BP, $fi    # STOREFI\n",
+                     [(store i32:$src, FIri:$addr)]>;
+def LOADFI : Pseudo<(outs GPR:$dst), (ins MEMri:$addr),
+                      "LOADFI!",
+//                    "sub BP, $fi    # LOADFI\n\t"
+//                    "load $dst, BP    # LOADFI\n\t"
+//                    "add BP, $fi    # LOADFI\n",
+                    [(set i32:$dst, (load FIri:$addr))]>;
 }
 
 class BRANCH<bits<4> Opc, string OpcodeStr, list<dag> Pattern>
