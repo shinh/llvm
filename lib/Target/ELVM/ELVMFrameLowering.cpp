@@ -22,7 +22,7 @@
 using namespace llvm;
 
 ELVMFrameLowering::ELVMFrameLowering(const ELVMSubtarget &STI)
-    : TargetFrameLowering(TargetFrameLowering::StackGrowsDown, 1, 0),
+    : TargetFrameLowering(TargetFrameLowering::StackGrowsDown, 1, -1),
       STI(STI), TII(*STI.getInstrInfo()), TRI(STI.getRegisterInfo()) {
 }
 
