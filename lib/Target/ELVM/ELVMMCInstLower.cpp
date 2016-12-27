@@ -69,6 +69,10 @@ void ELVMMCInstLower::Lower(const MachineInstr *MI, MCInst &OutMI) const {
     case MachineOperand::MO_GlobalAddress:
       MCOp = LowerSymbolOperand(MO, GetGlobalAddressSymbol(MO));
       break;
+    case MachineOperand::MO_ExternalSymbol:
+      MCOp = LowerSymbolOperand(
+          MO, Printer.GetExternalSymbolSymbol(MO.getSymbolName()));
+      break;
     }
 
     OutMI.addOperand(MCOp);

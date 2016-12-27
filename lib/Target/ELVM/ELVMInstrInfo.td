@@ -490,6 +490,7 @@ def : Pat<(i32 (and (i32 GPR:$src), 0xffffFFFF)),
 
 // Calls
 def : Pat<(ELVMcall tglobaladdr:$dst), (JAL tglobaladdr:$dst)>;
+def : Pat<(ELVMcall texternalsym:$dst), (JAL texternalsym:$dst)>;
 def : Pat<(ELVMcall imm:$dst), (JAL imm:$dst)>;
 
 /*

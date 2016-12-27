@@ -82,10 +82,12 @@ ELVMTargetLowering::ELVMTargetLowering(const TargetMachine &TM,
   setOperationAction(ISD::SREM, MVT::i32, Expand);
   setOperationAction(ISD::UREM, MVT::i32, Expand);
 
-  setOperationAction(ISD::MULHU, MVT::i32, Expand);
-  setOperationAction(ISD::MULHS, MVT::i32, Expand);
-  setOperationAction(ISD::UMUL_LOHI, MVT::i32, Expand);
-  setOperationAction(ISD::SMUL_LOHI, MVT::i32, Expand);
+  setOperationAction(ISD::MUL, MVT::i32, LibCall);
+  setOperationAction(ISD::MULHU, MVT::i32, LibCall);
+  setOperationAction(ISD::MULHS, MVT::i32, LibCall);
+  setOperationAction(ISD::UMUL_LOHI, MVT::i32, LibCall);
+  setOperationAction(ISD::SMUL_LOHI, MVT::i32, LibCall);
+  setLibcallName(RTLIB::MUL_I32, "__elvm_builtin_mul");
 
   setOperationAction(ISD::ADDC, MVT::i32, Expand);
   setOperationAction(ISD::ADDE, MVT::i32, Expand);
