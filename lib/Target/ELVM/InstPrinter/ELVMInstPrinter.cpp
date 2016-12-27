@@ -27,7 +27,7 @@ using namespace llvm;
 #include "ELVMGenAsmWriter.inc"
 
 void ELVMInstPrinter::printInst(const MCInst *MI, raw_ostream &O,
-                               StringRef Annot, const MCSubtargetInfo &STI) {
+                                StringRef Annot, const MCSubtargetInfo &STI) {
   printInstruction(MI, O);
   printAnnotation(O, Annot);
 }
@@ -85,10 +85,12 @@ void ELVMInstPrinter::printMemOperand(const MCInst *MI, int OpNo, raw_ostream &O
 }
 
 void ELVMInstPrinter::printImm32Operand(const MCInst *MI, unsigned OpNo,
-                                       raw_ostream &O) {
+                                        raw_ostream &O) {
   const MCOperand &Op = MI->getOperand(OpNo);
-  if (Op.isImm())
+  if (Op.isImm()) {
     O << (uint32_t)Op.getImm();
-  else
-    O << Op;
+  } else {
+    assert(Op.isExpr() && "Unknown operand kind in printImm32Operand");
+    O << *Op.getExpr();
+  }
 }

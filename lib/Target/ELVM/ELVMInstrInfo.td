@@ -238,7 +238,7 @@ class MOV_RI<string OpcodeStr>
 
 class LD_IMM32<bits<4> Pseudo>
     : InstELVM<(outs GPR:$dst), (ins u32imm:$imm),
-              "mov $dst, ${imm}ll",
+              "mov $dst, $imm",
               [(set GPR:$dst, (i32 imm:$imm))]> {
 
   bits<3> mode;

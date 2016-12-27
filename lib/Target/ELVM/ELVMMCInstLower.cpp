@@ -30,7 +30,7 @@ ELVMMCInstLower::GetGlobalAddressSymbol(const MachineOperand &MO) const {
 }
 
 MCOperand ELVMMCInstLower::LowerSymbolOperand(const MachineOperand &MO,
-                                             MCSymbol *Sym) const {
+                                              MCSymbol *Sym) const {
 
   const MCExpr *Expr = MCSymbolRefExpr::create(Sym, Ctx);
 
