@@ -16,5 +16,5 @@ def RetCC_ELVM : CallingConv<[CCIfType<[i32], CCAssignToReg<[A]>>]>;
 
 // ELVM C Calling convention.
 def CC_ELVM : CallingConv<[
-  CCAssignToStack<4, 4>
+  CCAssignToStack<1, 1>
 ]>;

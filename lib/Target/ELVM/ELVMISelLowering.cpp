@@ -296,6 +296,7 @@ SDValue ELVMTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
 
     assert(VA.isMemLoc());
 
+    fprintf(stderr, "arg%u loc=%d\n", i, VA.getLocMemOffset());
     SDValue StackPtr = DAG.getCopyFromReg(Chain, DL, ELVM::SP, getPointerTy(DAG.getDataLayout()));
     // TODO: Check if the comment is true.
     // SP points to one stack slot further so add one to adjust it.
