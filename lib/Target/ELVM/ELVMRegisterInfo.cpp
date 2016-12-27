@@ -27,7 +27,7 @@
 using namespace llvm;
 
 ELVMRegisterInfo::ELVMRegisterInfo()
-    : ELVMGenRegisterInfo(ELVM::A) {}
+    : ELVMGenRegisterInfo(0) {}
 
 const MCPhysReg *
 ELVMRegisterInfo::getCalleeSavedRegs(const MachineFunction *MF) const {
