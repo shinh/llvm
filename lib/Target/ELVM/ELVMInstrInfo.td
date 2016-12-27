@@ -194,8 +194,8 @@ let isAsCheapAsAMove = 1 in {
   defm SRL : ALU<0x7, "srl", srl>;
   defm XOR : ALU<0xa, "xor", xor>;
   defm SRA : ALU<0xc, "sra", sra>;
-  defm MUL : ALU<0x2, "mul", mul>;
-  defm DIV : ALU<0x3, "div", udiv>;
+  //defm MUL : ALU<0x2, "mul", mul>;
+  //defm DIV : ALU<0x3, "div", udiv>;
 }
 
 class MOV_RR<string OpcodeStr>

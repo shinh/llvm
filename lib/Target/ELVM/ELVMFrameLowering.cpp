@@ -44,12 +44,14 @@ void ELVMFrameLowering::emitPrologue(MachineFunction &MF,
   BuildMI(MBB, MBBI, DL, TII.get(ELVM::MOV_rr), ELVM::BP)
       .addReg(ELVM::SP)
       .setMIFlag(MachineInstr::FrameSetup);
-  if (MFI.getStackSize()) {
-    BuildMI(MBB, MBBI, DL, TII.get(ELVM::SUB_ri), ELVM::SP)
-        .addReg(ELVM::SP)
-        .addImm(MFI.getStackSize())
-        .setMIFlag(MachineInstr::FrameSetup);
-  }
+  // TODO: Clearly wrong.. don't know how to calculate frame size
+  //       precisely yet:(
+  //if (MFI.getStackSize()) {
+  BuildMI(MBB, MBBI, DL, TII.get(ELVM::SUB_ri), ELVM::SP)
+      .addReg(ELVM::SP)
+      .addImm(MFI.getStackSize() + 10)
+      .setMIFlag(MachineInstr::FrameSetup);
+    //}
 }
 
 void ELVMFrameLowering::emitEpilogue(MachineFunction &MF,

@@ -77,10 +77,23 @@ ELVMTargetLowering::ELVMTargetLowering(const TargetMachine &TM,
   setOperationAction(ISD::STACKSAVE, MVT::Other, Expand);
   setOperationAction(ISD::STACKRESTORE, MVT::Other, Expand);
 
+#if 0
   setOperationAction(ISD::SDIVREM, MVT::i32, Expand);
   setOperationAction(ISD::UDIVREM, MVT::i32, Expand);
   setOperationAction(ISD::SREM, MVT::i32, Expand);
   setOperationAction(ISD::UREM, MVT::i32, Expand);
+#endif
+  setOperationAction(ISD::SDIV, MVT::i32, LibCall);
+  setOperationAction(ISD::UDIV, MVT::i32, LibCall);
+  setLibcallName(RTLIB::SDIV_I32, "__elvm_builtin_div");
+  setLibcallName(RTLIB::UDIV_I32, "__elvm_builtin_div");
+  setOperationAction(ISD::SREM, MVT::i32, LibCall);
+  setOperationAction(ISD::UREM, MVT::i32, LibCall);
+  setLibcallName(RTLIB::SREM_I32, "__elvm_builtin_mod");
+  setLibcallName(RTLIB::UREM_I32, "__elvm_builtin_mod");
+  // TODO: Check its ABI and implement it.
+  //setOperationAction(ISD::SDIVREM, MVT::i32, LibCall);
+  //setOperationAction(ISD::UDIVREM, MVT::i32, LibCall);
 
   setOperationAction(ISD::MUL, MVT::i32, LibCall);
   setOperationAction(ISD::MULHU, MVT::i32, LibCall);
