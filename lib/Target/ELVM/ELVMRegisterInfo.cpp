@@ -81,7 +81,6 @@ void ELVMRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
     llvm_unreachable("bug in frame offset");
 
   if (MI.getOpcode() == ELVM::FI_ri) {
-    abort();
     // architecture does not really support FI_ri, replace it with
     //    MOV_rr <target_reg>, frame_reg
     //    ADD_ri <target_reg>, imm
