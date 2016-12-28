@@ -56,8 +56,9 @@ void ELVMInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
     assert(SrcReg != ELVM::BP);
     BuildMI(MBB, I, DL, get(ELVM::STOREFI))
         .addReg(SrcReg, getKillRegState(IsKill))
-        .addReg(ELVM::BP)
-        .addFrameIndex(FI);
+        //.addReg(ELVM::BP)
+        .addFrameIndex(FI)
+        .addImm(0);
   } else {
     llvm_unreachable("Can't store this register to stack slot");
   }
@@ -76,8 +77,9 @@ void ELVMInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
     fprintf(stderr, "loadRegFromStackSlot: FI=%d\n", FI);
     assert(DestReg != ELVM::BP);
     BuildMI(MBB, I, DL, get(ELVM::LOADFI), DestReg)
-        .addReg(ELVM::BP)
-        .addFrameIndex(FI);
+        //.addReg(ELVM::BP)
+        .addFrameIndex(FI)
+        .addImm(0);
   } else {
     llvm_unreachable("Can't load this register from stack slot");
   }

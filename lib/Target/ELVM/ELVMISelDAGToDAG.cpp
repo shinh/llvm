@@ -142,7 +142,6 @@ void ELVMDAGToDAGISel::Select(SDNode *Node) {
   // tablegen selection should be handled here.
   switch (Opcode) {
   default: break;
-#if 0
   case ISD::SDIV: {
     DebugLoc Empty;
     const DebugLoc &DL = Node->getDebugLoc();
@@ -155,7 +154,6 @@ void ELVMDAGToDAGISel::Select(SDNode *Node) {
     errs() << "Please convert to unsigned div/mod.\n";
     break;
   }
-#endif
   case ISD::INTRINSIC_W_CHAIN: {
     abort();
     unsigned IntNo = cast<ConstantSDNode>(Node->getOperand(1))->getZExtValue();

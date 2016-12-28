@@ -75,11 +75,13 @@ void ELVMRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
   }
 
   int Offset = MF.getFrameInfo().getObjectOffset(FrameIndex);
+  Offset += MI.getOperand(FIOperandNum + 1).getImm();
 
   if (!isInt<32>(Offset))
     llvm_unreachable("bug in frame offset");
 
   if (MI.getOpcode() == ELVM::FI_ri) {
+    abort();
     // architecture does not really support FI_ri, replace it with
     //    MOV_rr <target_reg>, frame_reg
     //    ADD_ri <target_reg>, imm
@@ -118,6 +120,7 @@ void ELVMRegisterInfo::eliminateFrameIndex(MachineBasicBlock::iterator II,
         .addImm(-Offset);
     MI.eraseFromParent();
   } else {
+    abort();
     MI.getOperand(i).ChangeToImmediate(Offset);
     //MI.getOperand(i).ChangeToRegister(FrameReg, false);
     //MI.getOperand(i + 1).ChangeToImmediate(Offset);
