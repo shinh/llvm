@@ -58,6 +58,12 @@ ELVMTargetLowering::ELVMTargetLowering(const TargetMachine &TM,
   // Set up the register classes.
   addRegisterClass(MVT::i32, &ELVM::GPRRegClass);
 
+#if 0
+  setTruncStoreAction(MVT::i16, MVT::i8, Legal);
+  setTruncStoreAction(MVT::i32, MVT::i16, Legal);
+  setTruncStoreAction(MVT::i32, MVT::i8, Legal);
+#endif
+
   // Compute derived properties from the register classes
   computeRegisterProperties(STI.getRegisterInfo());
 
@@ -124,6 +130,7 @@ ELVMTargetLowering::ELVMTargetLowering(const TargetMachine &TM,
   setOperationAction(ISD::SIGN_EXTEND_INREG, MVT::i16, Expand);
   setOperationAction(ISD::SIGN_EXTEND_INREG, MVT::i32, Expand);
 
+#if 1
   // Extended load operations for i1 types must be promoted
   for (MVT VT : MVT::integer_valuetypes()) {
     setLoadExtAction(ISD::EXTLOAD, VT, MVT::i1, Promote);
@@ -134,6 +141,15 @@ ELVMTargetLowering::ELVMTargetLowering(const TargetMachine &TM,
     setLoadExtAction(ISD::SEXTLOAD, VT, MVT::i16, Expand);
     setLoadExtAction(ISD::SEXTLOAD, VT, MVT::i32, Expand);
   }
+#else
+  for (MVT VT : MVT::integer_valuetypes()) {
+    for (auto N : {ISD::EXTLOAD, ISD::SEXTLOAD, ISD::ZEXTLOAD}) {
+      setLoadExtAction(N, VT, MVT::i1, Legal);
+      setLoadExtAction(N, VT, MVT::i8, Legal);
+      setLoadExtAction(N, VT, MVT::i16, Legal);
+    }
+  }
+#endif
 
   setBooleanContents(ZeroOrOneBooleanContent);
 
@@ -199,8 +215,7 @@ SDValue ELVMTargetLowering::LowerFormalArguments(
     // from this parameter.
     SDValue FIN = DAG.getFrameIndex(FI, getPointerTy(DAG.getDataLayout()));
     InVals.push_back(DAG.getLoad(LocVT, DL, Chain, FIN,
-                                 MachinePointerInfo::getFixedStack(MF, FI),
-                                 0));
+                                 MachinePointerInfo::getFixedStack(MF, FI)));
   }
 
   if (IsVarArg || MF.getFunction()->hasStructRetAttr()) {

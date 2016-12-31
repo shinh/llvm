@@ -193,7 +193,7 @@ let isAsCheapAsAMove = 1 in {
   defm SLL : ALU<0x6, "sll", shl>;
   defm SRL : ALU<0x7, "srl", srl>;
   defm XOR : ALU<0xa, "xor", xor>;
-  defm SRA : ALU<0xc, "sra", sra>;
+  defm SRA : ALU<0xc, "srl", sra>;
   //defm MUL : ALU<0x2, "mul", mul>;
   //defm DIV : ALU<0x3, "div", udiv>;
 }
@@ -328,7 +328,7 @@ class STORE<bits<2> SizeOp, list<dag> Pattern>
 class STOREi32<bits<2> Opc, PatFrag OpNode>
     : STORE<Opc, [(OpNode i32:$src, addr:$dst)]>;
 
-def STW : STOREi32<0x0, truncstorei32>;
+//def STW : STOREi32<0x0, truncstorei32>;
 def STH : STOREi32<0x1, truncstorei16>;
 def STB : STOREi32<0x2, truncstorei8>;
 def STD : STOREi32<0x3, store>;
@@ -493,12 +493,10 @@ def : Pat<(ELVMcall tglobaladdr:$dst), (JAL tglobaladdr:$dst)>;
 def : Pat<(ELVMcall texternalsym:$dst), (JAL texternalsym:$dst)>;
 def : Pat<(ELVMcall imm:$dst), (JAL imm:$dst)>;
 
-/*
 // Loads
-def : Pat<(extloadi8  ADDRri:$src), (i32 (LDB ADDRri:$src))>;
-def : Pat<(extloadi16 ADDRri:$src), (i32 (LDH ADDRri:$src))>;
-def : Pat<(extloadi32 ADDRri:$src), (i32 (LDW ADDRri:$src))>;
-*/
+def : Pat<(extloadi8  GPR:$src), (i32 (LDB GPR:$src))>;
+def : Pat<(extloadi16 GPR:$src), (i32 (LDH GPR:$src))>;
+def : Pat<(extloadi32 GPR:$src), (i32 (LDW GPR:$src))>;
 
 /*
 // Atomics

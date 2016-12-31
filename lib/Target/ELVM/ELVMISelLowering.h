@@ -84,6 +84,11 @@ private:
                                          Type *Ty) const override {
     return true;
   }
+
+  MVT getScalarShiftAmountTy(const DataLayout &, EVT) const override {
+    return MVT::i32;
+  }
+
 };
 }
 
