@@ -14,6 +14,7 @@
 
 #include "ELVMISelLowering.h"
 #include "ELVM.h"
+#include "ELVMMachineFunctionInfo.h"
 #include "ELVMSubtarget.h"
 #include "ELVMTargetMachine.h"
 #include "llvm/CodeGen/CallingConvLower.h"
@@ -130,6 +131,8 @@ ELVMTargetLowering::ELVMTargetLowering(const TargetMachine &TM,
   setOperationAction(ISD::SIGN_EXTEND_INREG, MVT::i16, Expand);
   setOperationAction(ISD::SIGN_EXTEND_INREG, MVT::i32, Expand);
 
+  setOperationAction(ISD::VASTART, MVT::Other, Custom);
+
 #if 1
   // Extended load operations for i1 types must be promoted
   for (MVT VT : MVT::integer_valuetypes()) {
@@ -171,6 +174,8 @@ SDValue ELVMTargetLowering::LowerOperation(SDValue Op, SelectionDAG &DAG) const 
     return LowerGlobalAddress(Op, DAG);
   case ISD::SELECT_CC:
     return LowerSELECT_CC(Op, DAG);
+  case ISD::VASTART:
+    return LowerVASTART(Op, DAG);
   default:
     llvm_unreachable("unimplemented operand");
   }
@@ -218,8 +223,14 @@ SDValue ELVMTargetLowering::LowerFormalArguments(
                                  MachinePointerInfo::getFixedStack(MF, FI)));
   }
 
-  if (IsVarArg || MF.getFunction()->hasStructRetAttr()) {
-    fail(DL, DAG, "functions with VarArgs or StructRet are not supported");
+  if (MF.getFunction()->hasStructRetAttr()) {
+    fail(DL, DAG, "functions with StructRet are not supported");
+  }
+
+  if (MFI.hasVAStart()) {
+    ELVMMachineFunctionInfo *FuncInfo = MF.getInfo<ELVMMachineFunctionInfo>();
+    unsigned StackSize = CCInfo.getNextStackOffset();
+    FuncInfo->setVarArgsFrameIndex(MFI.CreateFixedObject(1, StackSize, true));
   }
 
   return Chain;
@@ -514,6 +525,21 @@ SDValue ELVMTargetLowering::LowerSELECT_CC(SDValue Op, SelectionDAG &DAG) const 
   SDValue Ops[] = {LHS, RHS, TargetCC, TrueV, FalseV};
 
   return DAG.getNode(ELVMISD::SELECT_CC, DL, VTs, Ops);
+}
+
+SDValue ELVMTargetLowering::LowerVASTART(SDValue Op, SelectionDAG &DAG) const {
+  MachineFunction &MF = DAG.getMachineFunction();
+  ELVMMachineFunctionInfo *FuncInfo = MF.getInfo<ELVMMachineFunctionInfo>();
+  auto PtrVT = getPointerTy(MF.getDataLayout());
+
+  const Value *SV = cast<SrcValueSDNode>(Op.getOperand(2))->getValue();
+  SDLoc DL(Op);
+
+  // vastart just stores the address of the VarArgsFrameIndex slot into the
+  // memory location argument.
+  SDValue FR = DAG.getFrameIndex(FuncInfo->getVarArgsFrameIndex(), PtrVT);
+  return DAG.getStore(Op.getOperand(0), DL, FR, Op.getOperand(1),
+                      MachinePointerInfo(SV));
 }
 
 const char *ELVMTargetLowering::getTargetNodeName(unsigned Opcode) const {
