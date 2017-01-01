@@ -395,7 +395,7 @@ class BRANCH<bits<4> Opc, string OpcodeStr, list<dag> Pattern>
 
 class CALL<string OpcodeStr>
     : InstELVM<(outs), (ins calltarget:$BrDst),
-              !strconcat(OpcodeStr, " $BrDst"), []> {
+               !strconcat(OpcodeStr, " $BrDst"), []> {
   bits<4> op;
   bits<32> BrDst;
   bits<1> ELVMSrc;
@@ -409,16 +409,34 @@ class CALL<string OpcodeStr>
   let ELVMClass = 5; // ELVM_JMP
 }
 
+class CALL2<string OpcodeStr>
+    : InstELVM<(outs), (ins GPR:$BrDst),
+               !strconcat(OpcodeStr, " $BrDst"),
+               [(ELVMcall GPR:$BrDst)]> {
+  bits<4> op;
+  bits<32> BrDst;
+  bits<1> ELVMSrc;
+
+  let Inst{63-60} = op;
+  let Inst{59} = ELVMSrc;
+  let Inst{31-0} = BrDst;
+
+  let op = 9;       // ELVM_CALL
+  let ELVMSrc = 0;
+  let ELVMClass = 5; // ELVM_JMP
+}
+
 // Jump always
 let isBranch = 1, isTerminator = 1, hasDelaySlot=0, isBarrier = 1 in {
   def JMP : BRANCH<0x0, "jmp", [(br bb:$BrDst)]>;
 }
 
-// Jump and link
+// Call
 let isCall=1, hasDelaySlot=0 /*, Uses = [D]*/,
     // Potentially clobbered registers
     Defs = [A, B, C, D] in {
-  def JAL  : CALL<"call">;
+  def CALL_I : CALL<"call">;
+  def CALL_R : CALL2<"call">;
 }
 
 class NOP_I<string OpcodeStr>
@@ -489,9 +507,9 @@ def : Pat<(i32 (and (i32 GPR:$src), 0xffffFFFF)),
           (SRL_ri (SLL_ri (i32 GPR:$src), 32), 32)>;
 
 // Calls
-def : Pat<(ELVMcall tglobaladdr:$dst), (JAL tglobaladdr:$dst)>;
-def : Pat<(ELVMcall texternalsym:$dst), (JAL texternalsym:$dst)>;
-def : Pat<(ELVMcall imm:$dst), (JAL imm:$dst)>;
+def : Pat<(ELVMcall tglobaladdr:$dst), (CALL_I tglobaladdr:$dst)>;
+def : Pat<(ELVMcall texternalsym:$dst), (CALL_I texternalsym:$dst)>;
+def : Pat<(ELVMcall imm:$dst), (CALL_I imm:$dst)>;
 
 // Loads
 def : Pat<(extloadi8  GPR:$src), (i32 (LDB GPR:$src))>;

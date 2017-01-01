@@ -95,7 +95,7 @@ unsigned ELVMMCCodeEmitter::getMachineOpValue(const MCInst &MI,
 
   assert(Expr->getKind() == MCExpr::SymbolRef);
 
-  if (MI.getOpcode() == ELVM::JAL)
+  if (MI.getOpcode() == ELVM::CALL_I)
     // func call name
     Fixups.push_back(MCFixup::create(0, Expr, FK_SecRel_4));
   else if (MI.getOpcode() == ELVM::LD_imm32)
