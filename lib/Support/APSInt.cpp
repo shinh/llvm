@@ -15,6 +15,7 @@
 #include "llvm/ADT/APSInt.h"
 #include "llvm/ADT/FoldingSet.h"
 #include "llvm/ADT/StringRef.h"
+#include "llvm/IR/DataLayout.h"
 
 using namespace llvm;
 
@@ -23,8 +24,11 @@ APSInt::APSInt(StringRef Str) {
 
   // (Over-)estimate the required number of bits.
   unsigned NumBits = ((Str.size() * 64) / 19) + 2;
+  if (IsELVM && NumBits < 24) {
+    NumBits = 24;
+  }
   APInt Tmp(NumBits, Str, /*Radix=*/10);
-  if (Str[0] == '-') {
+  if (Str[0] == '-' && !IsELVM) {
     unsigned MinBits = Tmp.getMinSignedBits();
     if (MinBits > 0 && MinBits < NumBits)
       Tmp = Tmp.trunc(MinBits);

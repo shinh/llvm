@@ -337,6 +337,8 @@ static int compileModule(char **argv, LLVMContext &Context) {
   bool SkipModule = MCPU == "help" ||
                     (!MAttrs.empty() && MAttrs.front() == "help");
 
+  IsELVM = MArch == "elvm";
+
   // If user just wants to list available options, skip module loading
   if (!SkipModule) {
     if (StringRef(InputFilename).endswith_lower(".mir")) {

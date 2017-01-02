@@ -33,10 +33,6 @@
 #include <cstdlib>
 using namespace llvm;
 
-namespace llvm {
-bool IsELVM;
-}
-
 //===----------------------------------------------------------------------===//
 // Support for StructLayout
 //===----------------------------------------------------------------------===//
@@ -182,8 +178,7 @@ static const LayoutAlignElem DefaultAlignments[] = {
 void DataLayout::reset(StringRef Desc) {
   clear();
 
-  if (!Desc.empty()) {
-    IsELVM = false;
+  if (!Desc.empty() && !IsELVM) {
     if (Desc.take_front(5) == "ELVM-") {
       Desc = Desc.substr(5);
       IsELVM = true;

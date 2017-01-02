@@ -18,6 +18,7 @@
 #include "llvm/ADT/Hashing.h"
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringRef.h"
+#include "llvm/IR/DataLayout.h"
 #include "llvm/Support/Debug.h"
 #include "llvm/Support/ErrorHandling.h"
 #include "llvm/Support/MathExtras.h"
@@ -27,6 +28,10 @@
 #include <cstdlib>
 #include <cstring>
 using namespace llvm;
+
+namespace llvm {
+bool IsELVM;
+}
 
 #define DEBUG_TYPE "apint"
 
@@ -91,9 +96,12 @@ void APInt::initSlowCase(const APInt& that) {
 void APInt::initFromArray(ArrayRef<uint64_t> bigVal) {
   assert(BitWidth && "Bitwidth too small");
   assert(bigVal.data() && "Null pointer detected!");
-  if (isSingleWord())
+  if (isSingleWord()) {
     VAL = bigVal[0];
-  else {
+    if (IsELVM) {
+      VAL &= 0xffffff;
+    }
+  } else {
     // Get memory, cleared to 0
     pVal = getClearedMemory(getNumWords());
     // Calculate the number of words to copy
@@ -2115,6 +2123,10 @@ void APInt::fromString(unsigned numbits, StringRef str, uint8_t radix) {
   if (isNeg) {
     --(*this);
     this->flipAllBits();
+  }
+  if (IsELVM) {
+    assert(getNumWords() == 1);
+    VAL &= 0xffffff;
   }
 }
 
