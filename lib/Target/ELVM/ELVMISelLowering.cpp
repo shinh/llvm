@@ -161,9 +161,9 @@ ELVMTargetLowering::ELVMTargetLowering(const TargetMachine &TM,
   //setPrefFunctionAlignment(1);
 
   // inline memcpy() for kernel to see explicit copy
-  MaxStoresPerMemset = MaxStoresPerMemsetOptSize = 128;
-  MaxStoresPerMemcpy = MaxStoresPerMemcpyOptSize = 128;
-  MaxStoresPerMemmove = MaxStoresPerMemmoveOptSize = 128;
+  MaxStoresPerMemset = MaxStoresPerMemsetOptSize = 32;
+  MaxStoresPerMemcpy = MaxStoresPerMemcpyOptSize = 32;
+  MaxStoresPerMemmove = MaxStoresPerMemmoveOptSize = 32;
 }
 
 SDValue ELVMTargetLowering::LowerOperation(SDValue Op, SelectionDAG &DAG) const {

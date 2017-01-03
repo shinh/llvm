@@ -4535,6 +4535,9 @@ static bool FindOptimalMemOpLowering(std::vector<EVT> &MemOps,
   unsigned NumMemOps = 0;
   while (Size != 0) {
     unsigned VTSize = VT.getSizeInBits() / 8;
+    if (IsELVM) {
+      VTSize = (VT.getSizeInBits() + 31) / 32;
+    }
     while (VTSize > Size) {
       // For now, only use non-vector load / store's for the left-over pieces.
       EVT NewVT = VT;
@@ -4563,6 +4566,9 @@ static bool FindOptimalMemOpLowering(std::vector<EVT> &MemOps,
         } while (!TLI.isSafeMemOpType(NewVT.getSimpleVT()));
       }
       NewVTSize = NewVT.getSizeInBits() / 8;
+      if (IsELVM) {
+        NewVTSize = (NewVT.getSizeInBits() + 31) / 32;
+      }
 
       // If the new VT cannot cover all of the remaining bits, then consider
       // issuing a (or a pair of) unaligned and overlapping load / store.
@@ -4665,6 +4671,9 @@ static SDValue getMemcpyLoadsAndStores(SelectionDAG &DAG, const SDLoc &dl,
   for (unsigned i = 0; i != NumMemOps; ++i) {
     EVT VT = MemOps[i];
     unsigned VTSize = VT.getSizeInBits() / 8;
+    if (IsELVM) {
+      VTSize = (VT.getSizeInBits() + 31) / 32;
+    }
     SDValue Value, Store;
 
     if (VTSize > Size) {
@@ -4770,6 +4779,9 @@ static SDValue getMemmoveLoadsAndStores(SelectionDAG &DAG, const SDLoc &dl,
   for (unsigned i = 0; i < NumMemOps; i++) {
     EVT VT = MemOps[i];
     unsigned VTSize = VT.getSizeInBits() / 8;
+    if (IsELVM) {
+      VTSize = (VT.getSizeInBits() + 31) / 32;
+    }
     SDValue Value;
 
     Value =
@@ -4784,6 +4796,9 @@ static SDValue getMemmoveLoadsAndStores(SelectionDAG &DAG, const SDLoc &dl,
   for (unsigned i = 0; i < NumMemOps; i++) {
     EVT VT = MemOps[i];
     unsigned VTSize = VT.getSizeInBits() / 8;
+    if (IsELVM) {
+      VTSize = (VT.getSizeInBits() + 31) / 32;
+    }
     SDValue Store;
 
     Store = DAG.getStore(Chain, dl, LoadValues[i],
@@ -4867,6 +4882,9 @@ static SDValue getMemsetStores(SelectionDAG &DAG, const SDLoc &dl,
   for (unsigned i = 0; i < NumMemOps; i++) {
     EVT VT = MemOps[i];
     unsigned VTSize = VT.getSizeInBits() / 8;
+    if (IsELVM) {
+      VTSize = (VT.getSizeInBits() + 31) / 32;
+    }
     if (VTSize > Size) {
       // Issuing an unaligned load / store pair  that overlaps with the previous
       // pair. Adjust the offset accordingly.
@@ -4890,7 +4908,11 @@ static SDValue getMemsetStores(SelectionDAG &DAG, const SDLoc &dl,
         DstPtrInfo.getWithOffset(DstOff), Align,
         isVol ? MachineMemOperand::MOVolatile : MachineMemOperand::MONone);
     OutChains.push_back(Store);
-    DstOff += VT.getSizeInBits() / 8;
+    if (IsELVM) {
+      DstOff += (VT.getSizeInBits() + 31) / 32;
+    } else {
+      DstOff += VT.getSizeInBits() / 8;
+    }
     Size -= VTSize;
   }
 
