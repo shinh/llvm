@@ -481,20 +481,6 @@ SDValue ELVMTargetLowering::LowerCallResult(
   return Chain;
 }
 
-static void NegateCC(SDValue &LHS, SDValue &RHS, ISD::CondCode &CC) {
-  switch (CC) {
-  default:
-    break;
-  case ISD::SETULT:
-  case ISD::SETULE:
-  case ISD::SETLT:
-  case ISD::SETLE:
-    CC = ISD::getSetCCSwappedOperands(CC);
-    std::swap(LHS, RHS);
-    break;
-  }
-}
-
 SDValue ELVMTargetLowering::LowerBR_CC(SDValue Op, SelectionDAG &DAG) const {
   SDValue Chain = Op.getOperand(0);
   ISD::CondCode CC = cast<CondCodeSDNode>(Op.getOperand(1))->get();
@@ -502,8 +488,6 @@ SDValue ELVMTargetLowering::LowerBR_CC(SDValue Op, SelectionDAG &DAG) const {
   SDValue RHS = Op.getOperand(3);
   SDValue Dest = Op.getOperand(4);
   SDLoc DL(Op);
-
-  NegateCC(LHS, RHS, CC);
 
   return DAG.getNode(ELVMISD::BR_CC, DL, Op.getValueType(), Chain, LHS, RHS,
                      DAG.getConstant(CC, DL, MVT::i32), Dest);
@@ -516,8 +500,6 @@ SDValue ELVMTargetLowering::LowerSELECT_CC(SDValue Op, SelectionDAG &DAG) const 
   SDValue FalseV = Op.getOperand(3);
   ISD::CondCode CC = cast<CondCodeSDNode>(Op.getOperand(4))->get();
   SDLoc DL(Op);
-
-  NegateCC(LHS, RHS, CC);
 
   SDValue TargetCC = DAG.getConstant(CC, DL, MVT::i32);
 
@@ -630,6 +612,30 @@ ELVMTargetLowering::EmitInstrWithCustomInserter(MachineInstr &MI,
     break;
   case ISD::SETUGE:
     BuildMI(BB, DL, TII.get(ELVM::JUGE_rr))
+        .addReg(LHS)
+        .addReg(RHS)
+        .addMBB(Copy1MBB);
+    break;
+  case ISD::SETLT:
+    BuildMI(BB, DL, TII.get(ELVM::JSLT_rr))
+        .addReg(LHS)
+        .addReg(RHS)
+        .addMBB(Copy1MBB);
+    break;
+  case ISD::SETULT:
+    BuildMI(BB, DL, TII.get(ELVM::JULT_rr))
+        .addReg(LHS)
+        .addReg(RHS)
+        .addMBB(Copy1MBB);
+    break;
+  case ISD::SETLE:
+    BuildMI(BB, DL, TII.get(ELVM::JSLE_rr))
+        .addReg(LHS)
+        .addReg(RHS)
+        .addMBB(Copy1MBB);
+    break;
+  case ISD::SETULE:
+    BuildMI(BB, DL, TII.get(ELVM::JULE_rr))
         .addReg(LHS)
         .addReg(RHS)
         .addMBB(Copy1MBB);

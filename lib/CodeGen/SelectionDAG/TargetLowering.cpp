@@ -1472,6 +1472,12 @@ SDValue TargetLowering::SimplifySetCC(EVT VT, SDValue N0, SDValue N1,
   }
   }
 
+  // ELVM doesn't have signed integers and the simplifications below
+  // might be wrong.
+  // TODO: Would be great if we can support signed comparison..
+  if (IsELVM)
+    return SDValue();
+
   // Ensure that the constant occurs on the RHS, and fold constant
   // comparisons.
   ISD::CondCode SwappedCC = ISD::getSetCCSwappedOperands(Cond);

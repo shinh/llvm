@@ -76,10 +76,18 @@ def ELVM_CC_GE  : PatLeaf<(imm),
                          [{return (N->getZExtValue() == ISD::SETGE);}]>;
 def ELVM_CC_GT  : PatLeaf<(imm),
                          [{return (N->getZExtValue() == ISD::SETGT);}]>;
+def ELVM_CC_LE  : PatLeaf<(imm),
+                         [{return (N->getZExtValue() == ISD::SETLE);}]>;
+def ELVM_CC_LT  : PatLeaf<(imm),
+                         [{return (N->getZExtValue() == ISD::SETLT);}]>;
 def ELVM_CC_GTU : PatLeaf<(imm),
                          [{return (N->getZExtValue() == ISD::SETUGT);}]>;
 def ELVM_CC_GEU : PatLeaf<(imm),
                          [{return (N->getZExtValue() == ISD::SETUGE);}]>;
+def ELVM_CC_LTU : PatLeaf<(imm),
+                         [{return (N->getZExtValue() == ISD::SETULT);}]>;
+def ELVM_CC_LEU : PatLeaf<(imm),
+                         [{return (N->getZExtValue() == ISD::SETULE);}]>;
 
 // jump instructions
 class JMP_RR<bits<4> Opc, string OpcodeStr, PatLeaf Cond>
@@ -131,12 +139,16 @@ multiclass J<bits<4> Opc, string OpcodeStr, PatLeaf Cond> {
 
 let isBranch = 1, isTerminator = 1, hasDelaySlot=0 in {
 // cmp+goto instructions
-defm JEQ  : J<0x1, "eq",  ELVM_CC_EQ>;
+defm JEQ  : J<0x1, "eq", ELVM_CC_EQ>;
 defm JUGT : J<0x2, "gt", ELVM_CC_GTU>;
 defm JUGE : J<0x3, "ge", ELVM_CC_GEU>;
-defm JNE  : J<0x5, "ne",  ELVM_CC_NE>;
+defm JULT : J<0x2, "lt", ELVM_CC_LTU>;
+defm JULE : J<0x3, "le", ELVM_CC_LEU>;
+defm JNE  : J<0x5, "ne", ELVM_CC_NE>;
 defm JSGT : J<0x6, "gt", ELVM_CC_GT>;
 defm JSGE : J<0x7, "ge", ELVM_CC_GE>;
+defm JSLT : J<0x2, "lt", ELVM_CC_LT>;
+defm JSLE : J<0x3, "le", ELVM_CC_LE>;
 }
 
 // ALU instructions
