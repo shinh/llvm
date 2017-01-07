@@ -264,14 +264,6 @@ SDValue ELVMTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
 
   unsigned NumBytes = CCInfo.getNextStackOffset();
 
-  for (auto &Arg : Outs) {
-    ISD::ArgFlagsTy Flags = Arg.Flags;
-    if (!Flags.isByVal())
-      continue;
-
-    fail(CLI.DL, DAG, "pass by value not supported ", Callee);
-  }
-
   auto PtrVT = getPointerTy(MF.getDataLayout());
   Chain = DAG.getCALLSEQ_START(
       Chain, DAG.getConstant(NumBytes, CLI.DL, PtrVT, true), CLI.DL);
