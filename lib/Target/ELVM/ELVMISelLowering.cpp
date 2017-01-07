@@ -218,10 +218,6 @@ SDValue ELVMTargetLowering::LowerFormalArguments(
                                  MachinePointerInfo::getFixedStack(MF, FI)));
   }
 
-  if (MF.getFunction()->hasStructRetAttr()) {
-    fail(DL, DAG, "functions with StructRet are not supported");
-  }
-
   if (MFI.hasVAStart()) {
     ELVMMachineFunctionInfo *FuncInfo = MF.getInfo<ELVMMachineFunctionInfo>();
     unsigned StackSize = CCInfo.getNextStackOffset();
