@@ -189,6 +189,12 @@ void ELVMDAGToDAGISel::Select(SDNode *Node) {
     ReplaceNode(Node, CurDAG->getMachineNode(Opc, SDLoc(Node), VT, TFI));
     return;
   }
+
+  case ISD::BRIND: {
+    errs() << "Error: indirect branch is not supported yet\n";
+    break;
+  }
+
   }
 
   // Select the default instruction
