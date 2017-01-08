@@ -422,8 +422,6 @@ void
 DataLayout::setAlignment(AlignTypeEnum align_type, unsigned abi_align,
                          unsigned pref_align, uint32_t bit_width) {
   if (IsELVM) {
-    fprintf(stderr, "setAlignment: %u %u %u\n",
-            abi_align, pref_align, bit_width);
     abi_align = 1;
     pref_align = 1;
   }
@@ -468,8 +466,6 @@ void DataLayout::setPointerAlignment(uint32_t AddrSpace, unsigned ABIAlign,
                                      unsigned PrefAlign,
                                      uint32_t TypeByteWidth) {
   if (IsELVM) {
-    fprintf(stderr, "setPointerAlignment: %u %u %u %u\n",
-            ABIAlign, PrefAlign, TypeByteWidth, AddrSpace);
     ABIAlign = 1;
     PrefAlign = 1;
     TypeByteWidth = 1;

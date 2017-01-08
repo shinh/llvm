@@ -52,7 +52,6 @@ void ELVMInstrInfo::storeRegToStackSlot(MachineBasicBlock &MBB,
     DL = I->getDebugLoc();
 
   if (RC == &ELVM::GPRRegClass) {
-    fprintf(stderr, "storeRegToStackSlot: FI=%d\n", FI);
     assert(SrcReg != ELVM::BP);
     BuildMI(MBB, I, DL, get(ELVM::STOREFI))
         .addReg(SrcReg, getKillRegState(IsKill))
@@ -74,7 +73,6 @@ void ELVMInstrInfo::loadRegFromStackSlot(MachineBasicBlock &MBB,
     DL = I->getDebugLoc();
 
   if (RC == &ELVM::GPRRegClass) {
-    fprintf(stderr, "loadRegFromStackSlot: FI=%d\n", FI);
     assert(DestReg != ELVM::BP);
     BuildMI(MBB, I, DL, get(ELVM::LOADFI), DestReg)
         //.addReg(ELVM::BP)

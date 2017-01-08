@@ -209,7 +209,6 @@ SDValue ELVMTargetLowering::LowerFormalArguments(
     int32_t Offset = VA.getLocMemOffset() + 2;
     // Create the frame index object for this incoming parameter.
     int FI = MFI.CreateFixedObject(LocVT.getSizeInBits() / 32, Offset, true);
-    fprintf(stderr, "size=%u fi=%d\n", LocVT.getSizeInBits(), FI);
 
     // Create the SelectionDAG nodes corresponding to a load
     // from this parameter.
@@ -295,22 +294,6 @@ SDValue ELVMTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
   }
 #endif
 
-#if 0
-  fprintf(stderr, "hey\n");
-  const DataLayout &TD = DAG.getDataLayout();
-  for (unsigned i = 0; i != ArgLocs.size(); i++) {
-    fprintf(stderr, "hey %u/%zu\n", i, ArgLocs.size());
-    MVT LocVT = ArgLocs[i].getLocVT();
-    unsigned Offset = CCInfo.AllocateStack(
-        TD.getTypeAllocSize(EVT(LocVT).getTypeForEVT(CCInfo.getContext())),
-        TD.getABITypeAlignment(
-            EVT(LocVT).getTypeForEVT(CCInfo.getContext())));
-    CCInfo.addLoc(CCValAssign::getMem(i, LocVT, Offset, LocVT,
-                                      CCValAssign::Full));
-  }
-#endif
-
-  fprintf(stderr, "hey\n");
   for (unsigned i = ArgLocs.size(); i != 0;) {
     --i;
     CCValAssign &VA = ArgLocs[i];
@@ -318,7 +301,6 @@ SDValue ELVMTargetLowering::LowerCall(TargetLowering::CallLoweringInfo &CLI,
 
     assert(VA.isMemLoc());
 
-    fprintf(stderr, "arg%u loc=%d\n", i, VA.getLocMemOffset());
     SDValue StackPtr = DAG.getCopyFromReg(Chain, DL, ELVM::SP, getPointerTy(DAG.getDataLayout()));
     // TODO: Check if the comment is true.
     // SP points to one stack slot further so add one to adjust it.
